@@ -1,0 +1,61 @@
+classDiagram
+direction TB
+    class Model {
+	    +UUID id
+	    +DateTime createdAt
+	    +Datetime updatedAt
+    }
+
+    class User {
+	    +string firstName
+	    +string lastName
+	    +string email
+	    +string password
+	    +bool isAdmin
+	    +register()
+	    +updateProfile()
+	    +deleteUser()
+    }
+
+    class Place {
+	    +string title
+	    +string description
+	    +float price
+	    +float latitude
+	    +float longitude
+	    +UUID owner
+	    +createPlace()
+	    +updatePlace()
+	    +deletePlace()
+	    +listPlaces()
+    }
+
+    class Review {
+	    +string content
+	    +int rating
+	    +UUID User
+	    +UUID Place
+	    +submitReview()
+	    +editReview()
+	    +deleteReview()
+	    +listReviews()
+    }
+
+    class Amenity {
+	    +string name
+	    +string description
+	    +bool available
+	    +addAmenity()
+	    +updateAmenity()
+	    +removeAmenity()
+	    +listAmenities()
+    }
+
+    Model ..|> User
+    Model ..|> Place
+    Model ..|> Review
+    Model ..|> Amenity
+    User "1" o-- "0..*" Review : "writes"
+    Place "0.." --o "1" User : "has"
+    Place "1" o-- "0..*" Review : "has"
+    Place "0.." o-- "0..*" Amenity : "has"
