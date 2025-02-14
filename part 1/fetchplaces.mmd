@@ -1,0 +1,16 @@
+---
+config:
+  theme: forest
+---
+sequenceDiagram
+participant User
+participant API
+participant BusinessLogic
+participant Database
+User->>API: API Call (e.g., Fetch Places List with filters: amenity, price, location)
+API->>BusinessLogic: Forward request for processing (filters applied)
+BusinessLogic->>BusinessLogic: Apply business rules and filters (e.g., price, location, amenities)
+BusinessLogic->>Database: Fetch places list based on filters
+Database-->>BusinessLogic: Return list of places
+BusinessLogic->>API: Generate success response with list of places
+API-->>User: Return success (200 OK) with places data
