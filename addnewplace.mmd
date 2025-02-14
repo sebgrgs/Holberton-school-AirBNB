@@ -1,0 +1,26 @@
+---
+config:
+  theme: forest
+---
+sequenceDiagram
+participant User
+participant API
+participant BusinessLogic
+participant Database
+User->>API: API Call (e.g., Add New Place, title, description, price, latitude, longitud and owner.)
+API->>API: Validate required parameters
+alt Invalid parameters
+    API-->>User: Return error (400 Bad Request)
+else Valid parameters
+    API->>BusinessLogic: Forward request for processing
+    BusinessLogic->>BusinessLogic: Apply business rules and validation
+    alt Business validation fails
+        BusinessLogic-->>API: Return business error (e.g., "Place already exists")
+        API-->>User: Return failure response
+    else Validation successful
+        BusinessLogic->>Database: Save new place data
+        Database-->>BusinessLogic: Confirm data saved
+        BusinessLogic-->>API: Generate success response
+        API-->>User: Return success (200 OK)
+    end
+end
