@@ -47,9 +47,9 @@ class User(BaseModel):
 		return self.__email
 	
 	@email.setter
-	def validate_email(self, email):
+	def email(self, value):
 		"""Set the email of the user"""
 		pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
-		if not re.match(pattern, email):
+		if not re.match(pattern, value):
 			raise ValueError("Invalid email address")
-		self.__email = email
+		self.__email = value
