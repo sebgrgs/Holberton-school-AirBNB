@@ -19,17 +19,14 @@ class HBnBFacade:
     def get_all_users(self):
         return self.user_repo.get_all()
     
-    def update_user(self, user_id, user_data):
+    def update_user(self, user_id, **user_data):
         """Update user in repository"""
         user = self.get_user(user_id)
         if not user:
-            return None
+            raise ValueError("User not found")
 
-        if 'first_name' in user_data:
-            user.first_name = user_data['first_name']
-        if 'last_name' in user_data:
-            user.last_name = user_data['last_name'] 
-        if 'email' in user_data:
-            user.email = user_data['email']
+        for field, value in user_data.items():
+            if hasattr(user, field):
+                setattr(user, field, value)
 
         return self.user_repo.update(user)
