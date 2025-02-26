@@ -44,6 +44,7 @@ class PlaceList(Resource):
                 'latitude': new_place.latitude,
                 'longitude': new_place.longitude,
                 'owner_id': new_place.owner_id,
+                'amenities': new_place.amenities
             }, 201
 
     @api.response(200, 'List of places retrieved successfully')

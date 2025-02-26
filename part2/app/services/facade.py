@@ -71,9 +71,11 @@ class HBnBFacade:
         return updated_amenity
 
     def create_place(self, place_data):
+        amenities = place_data.pop('amenities', [])
         place = Place(**place_data)
+        place.amenities = amenities
         self.place_repo.add(place)
-        return
+        return place
 
     def get_place(self, place_id):
         pass

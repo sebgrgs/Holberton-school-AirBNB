@@ -6,7 +6,7 @@ from app.models.base import BaseModel
 class Place(BaseModel):
     """Model class representing a place"""
     
-    def __init__(self, title, description, price, latitude, longitude, owner):
+    def __init__(self, title, description, price, latitude, longitude, owner_id):
         """Initialize the place with provided details"""
         super().__init__()
         self.title = title
@@ -14,7 +14,7 @@ class Place(BaseModel):
         self.price = price
         self.latitude = latitude
         self.longitude = longitude
-        self.owner = owner
+        self.owner_id = owner_id
         self.reviews = []
         self.amenities = []
     
@@ -81,13 +81,13 @@ class Place(BaseModel):
         self.__longitude = value
     
     @property
-    def owner(self):
+    def owner_id(self):
         """Get the owner of the place"""
-        return self.__owner
+        return self.__owner_id
     
-    @owner.setter
-    def owner(self, value):
+    @owner_id.setter
+    def owner_id(self, value):
         """Set the owner of the place"""
         if not value:
             raise ValueError("Owner cannot be empty")
-        self.__owner = value
+        self.__owner_id = value
