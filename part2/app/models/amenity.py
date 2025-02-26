@@ -5,7 +5,7 @@ from app.models.base import BaseModel
 class Amenity(BaseModel):
     """Model class representing an amenity"""
     
-    def __init__(self, id, name):
+    def __init__(self, name):
         """Initialize the amenity with provided details"""
         super().__init__()
         self.name = name
