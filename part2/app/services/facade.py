@@ -78,7 +78,7 @@ class HBnBFacade:
         return place
 
     def get_place(self, place_id):
-        pass
+        return self.place_repo.get(place_id)
 
     def get_all_places(self):
         return self.place_repo.get_all()

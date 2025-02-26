@@ -67,8 +67,38 @@ class PlaceResource(Resource):
     @api.response(404, 'Place not found')
     def get(self, place_id):
         """Get place details by ID"""
-        # Placeholder for the logic to retrieve a place by ID, including associated owner and amenities
-        pass
+        place = facade.get_place(place_id)
+        if not place:
+            return {'error': 'Place not found'}, 404
+        
+        owner = facade.get_user(place.owner_id)
+        if not owner:
+            return {'error': 'Owner not found'}, 404
+
+        amenities = []
+        for amenity_id in place.amenities:
+            amenity = facade.get_amenity(amenity_id)
+            if amenity:
+                amenities.append({
+                    'id': amenity.id,
+                    'name': amenity.name
+                })
+
+        return {
+                'id': place.id,
+                'title': place.title,
+                'description': place.description,
+                'price': place.price,
+                'latitude': place.latitude,
+                'longitude': place.longitude,
+                'owner': {
+                    'id': owner.id,
+                    'first_name': owner.first_name,
+                    'last_name': owner.last_name,
+                    'email': owner.email
+                },
+                'amenities': amenities
+            }, 200
 
     @api.expect(place_model)
     @api.response(200, 'Place updated successfully')
@@ -76,5 +106,17 @@ class PlaceResource(Resource):
     @api.response(400, 'Invalid input data')
     def put(self, place_id):
         """Update a place's information"""
-        # Placeholder for the logic to update a place by ID
-        pass
+        place_data = api.payload
+        updated_place = facade.update_place(place_id, place_data)
+        if not updated_place:
+            return {'error': 'Place not found'}, 404
+        return {
+                'id': updated_place.id,
+                'title': updated_place.title,
+                'description': updated_place.description,
+                'price': updated_place.price,
+                'latitude': updated_place.latitude,
+                'longitude': updated_place.longitude,
+                'owner_id': updated_place.owner_id,
+                'amenities': updated_place.amenities
+            }, 200
