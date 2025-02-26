@@ -25,8 +25,14 @@ class HBnBFacade:
         if not user:
             raise ValueError("User not found")
 
+        updates = {}
         for field, value in user_data.items():
             if hasattr(user, field):
-                setattr(user, field, value)
+                updates[field] = value
 
-        return self.user_repo.update(user)
+        updated_user = self.user_repo.update(user_id, updates)
+
+        if updated_user is None:
+            updated_user = self.get_user(user_id)
+
+        return updated_user
