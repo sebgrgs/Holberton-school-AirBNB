@@ -51,4 +51,19 @@ class HBnBFacade:
         return self.amenity_repo.get_all()
 
     def update_amenity(self, amenity_id, amenity_data):
-        pass
+        """Update amenity in repository"""
+        amenity = self.get_amenity(amenity_id)
+        if not amenity:
+            raise ValueError("Amenity not found")
+
+        updates = {}
+        for field, value in amenity_data.items():
+            if hasattr(amenity, field):
+                updates[field] = value
+
+        updated_amenity = self.amenity_repo.update(amenity_id, updates)
+
+        if updated_amenity is None:
+            updated_amenity = self.get_amenity(amenity_id)
+
+        return updated_amenity
