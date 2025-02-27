@@ -29,7 +29,7 @@ place_model = api.model('Place', {
 
 @api.route('/')
 class PlaceList(Resource):
-    @api.expect(place_model)
+    @api.expect(place_model, validate=True)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):

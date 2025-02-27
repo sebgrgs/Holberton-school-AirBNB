@@ -84,4 +84,19 @@ class HBnBFacade:
         return self.place_repo.get_all()
 
     def update_place(self, place_id, place_data):
-        pass
+        """Update place in repository"""
+        place = self.get_place(place_id)
+        if not place:
+            raise ValueError("Place not found")
+
+        updates = {}
+        for field, value in place_data.items():
+            if hasattr(place, field):
+                updates[field] = value
+
+        updated_place = self.place_repo.update(place_id, updates)
+
+        if updated_place is None:
+            updated_place = self.get_place(place_id)
+
+        return updated_place
