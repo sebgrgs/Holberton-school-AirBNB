@@ -14,19 +14,27 @@ user_model = api.model('User', {
 class UserList(Resource):
     @api.expect(user_model, validate=True)
     @api.response(201, 'User successfully created')
-    @api.response(400, 'Email already registered')
     @api.response(400, 'Invalid input data')
+    @api.response(400, 'Email already registered')
     def post(self):
         """Register a new user"""
         user_data = api.payload
 
-        # Simulate email uniqueness check (to be replaced by real validation with persistence)
+        # Simulate email uniqueness check
         existing_user = facade.get_user_by_email(user_data['email'])
         if existing_user:
             return {'error': 'Email already registered'}, 400
 
-        new_user = facade.create_user(user_data)
-        return {'id': new_user.id, 'first_name': new_user.first_name, 'last_name': new_user.last_name, 'email': new_user.email}, 201
+        try:
+            new_user = facade.create_user(user_data)
+            return {
+                'id': new_user.id, 
+                'first_name': new_user.first_name, 
+                'last_name': new_user.last_name, 
+                'email': new_user.email
+            }, 201
+        except ValueError:
+            return {'error': 'Invalid input data'}, 400
 
 
     @api.response(200, 'Success')
