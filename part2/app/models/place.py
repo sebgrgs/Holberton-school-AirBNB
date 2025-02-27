@@ -81,13 +81,13 @@ class Place(BaseModel):
         self.__longitude = value
     
     @property
-    def owner_id(self):
+    def owner(self):
         """Get the owner of the place"""
-        return self.__owner_id
+        return self.__owner
     
-    @owner_id.setter
-    def owner_id(self, value):
+    @owner.setter
+    def owner(self, value):
         """Set the owner of the place"""
         if not value:
             raise ValueError("Owner cannot be empty")
-        self.__owner_id = value
+        self.__owner = value

@@ -74,7 +74,18 @@ class HBnBFacade:
 
     def create_place(self, place_data):
         amenities = place_data.pop('amenities', [])
-        place = Place(**place_data)
+        
+        # Create place with remaining data
+        place = Place(
+            title=place_data['title'],
+            description=place_data['description'],
+            price=place_data['price'],
+            latitude=place_data['latitude'],
+            longitude=place_data['longitude'],
+            owner_id=place_data['owner_id']
+        )
+        
+        # Add amenities after creation
         place.amenities = amenities
         self.place_repo.add(place)
         return place
