@@ -1,7 +1,3 @@
-import re
-from place import Place
-from user import User
-
 from app.models.base import BaseModel
 
 class Review(BaseModel):
@@ -47,8 +43,8 @@ class Review(BaseModel):
     @place.setter
     def place(self, value):
         """Set the place being reviewed"""
-        if not isinstance(value, Place):
-            raise ValueError("Invalid place instance")
+        if not isinstance(value, str):
+            raise ValueError("Place must be a string")
         self.__place = value
     
     @property
@@ -59,8 +55,8 @@ class Review(BaseModel):
     @user.setter
     def user(self, value):
         """Set the user who wrote the review"""
-        if not isinstance(value, User):
-            raise ValueError("Invalid user instance")
+        if not isinstance(value, str):
+            raise ValueError("User must be a string")
         if not value:
             raise ValueError("User cannot be empty")
         self.__user = value
