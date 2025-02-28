@@ -73,20 +73,21 @@ class HBnBFacade:
         return updated_amenity
 
     def create_place(self, place_data):
-        amenities = place_data.pop('amenities', [])
+        """Create new place"""
+        # Extract amenities before creating place
+        amenity_ids = [amenity['id'] for amenity in place_data.pop('amenities', [])]
         
-        # Create place with remaining data
+        # Create place instance
         place = Place(
             title=place_data['title'],
             description=place_data['description'],
             price=place_data['price'],
             latitude=place_data['latitude'],
             longitude=place_data['longitude'],
-            owner_id=place_data['owner_id']
+            owner_id=place_data['owner_id'],
+            amenities=amenity_ids
         )
         
-        # Add amenities after creation
-        place.amenities = amenities
         self.place_repo.add(place)
         return place
 
