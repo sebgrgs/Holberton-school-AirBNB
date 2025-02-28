@@ -44,8 +44,11 @@ class PlaceList(Resource):
     def post(self):
         """Register a new place"""
         place_data = api.payload
-        new_place = facade.create_place(place_data)
-        return {
+        try:
+            # Convert price to float for validation
+            place_data['price'] = float(place_data['price'])
+            new_place = facade.create_place(place_data)
+            return {
                 'id': new_place.id,
                 'title': new_place.title,
                 'description': new_place.description,
@@ -55,6 +58,9 @@ class PlaceList(Resource):
                 'owner_id': new_place.owner_id,
                 'amenities': new_place.amenities
             }, 201
+
+        except ValueError as e:
+            return {'error': str(e)}, 400
 
     @api.response(200, 'List of places retrieved successfully')
     def get(self):

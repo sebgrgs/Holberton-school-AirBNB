@@ -132,10 +132,29 @@ class HBnBFacade:
         return self.review_repo.get_all()
 
     def get_reviews_by_place(self, place_id):
-        return self.review_repo.get_by_attribute('place', place_id)
+        """Get all reviews for a specific place"""
+        reviews = []
+        for review in self.review_repo.get_all():
+            if review.place_id == place_id:
+                reviews.append(review)
+        return reviews
 
     def update_review(self, review_id, review_data):
-        return self.review_repo.update(review_id, review_data)
+        review = self.get_review(review_id)
+        if not review:
+            raise ValueError("Review not found")
+        
+        updates = {}
+        for field, value in review_data.items():
+            if hasattr(review, field):
+                updates[field] = value
+
+        updated_review = self.review_repo.update(review_id, updates)
+
+        if updated_review is None:
+            updated_review = self.get_review(review_id)
+
+        return updated_review
 
     def delete_review(self, review_id):
         return self.review_repo.delete(review_id)
