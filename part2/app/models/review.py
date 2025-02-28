@@ -3,13 +3,13 @@ from app.models.base import BaseModel
 class Review(BaseModel):
     """Model class representing a review"""
     
-    def __init__(self, text, rating, place, user):
+    def __init__(self, text, rating, place_id, user_id):
         """Initialize the review with provided details"""
         super().__init__()
         self.text = text
         self.rating = rating
-        self.place = place
-        self.user = user
+        self.place_id = place_id
+        self.user_id = user_id
     
     @property
     def text(self):
@@ -36,27 +36,25 @@ class Review(BaseModel):
         self.__rating = value
     
     @property
-    def place(self):
-        """Get the place being reviewed"""
-        return self.__place
+    def place_id(self):
+        """Get the place ID being reviewed"""
+        return self.__place_id
     
-    @place.setter
-    def place(self, value):
-        """Set the place being reviewed"""
+    @place_id.setter
+    def place_id(self, value):
+        """Set the place ID being reviewed"""
         if not isinstance(value, str):
-            raise ValueError("Place must be a string")
-        self.__place = value
+            raise ValueError("Place ID must be a string")
+        self.__place_id = value
     
     @property
-    def user(self):
-        """Get the user who wrote the review"""
-        return self.__user
+    def user_id(self):
+        """Get the user ID who wrote the review"""
+        return self.__user_id
     
-    @user.setter
-    def user(self, value):
-        """Set the user who wrote the review"""
+    @user_id.setter
+    def user_id(self, value):
+        """Set the user ID who wrote the review"""
         if not isinstance(value, str):
-            raise ValueError("User must be a string")
-        if not value:
-            raise ValueError("User cannot be empty")
-        self.__user = value
+            raise ValueError("User ID must be a string")
+        self.__user_id = value
