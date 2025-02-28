@@ -33,8 +33,8 @@ class UserList(Resource):
                 'last_name': new_user.last_name, 
                 'email': new_user.email
             }, 201
-        except ValueError:
-            return {'error': 'Invalid input data'}, 400
+        except ValueError as e:
+            return {'error': str(e)}, 400
 
 
     @api.response(200, 'Success')

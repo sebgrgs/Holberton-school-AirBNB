@@ -52,7 +52,7 @@ class Place(BaseModel):
     @price.setter
     def price(self, value):
         """Set the price of the place"""
-        if value < 0:
+        if not isinstance (value, (int, float)) or value < 0:
             raise ValueError("Price cannot be negative")
         self.__price = value
     

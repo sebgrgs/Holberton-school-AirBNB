@@ -186,22 +186,21 @@ class TestUserEndpoints(unittest.TestCase):
         
     def test_create_user_place_invalid_data(self):
         print("\nTest: Create User and Place with invalid data")
-    
+
         print("\n1. Creating user...")
         user_data = {
             "first_name": "Jane",
             "last_name": "Doe",
-            "email": "jane.doe@example.com"
+            "email": "aaa@aa.aa"
         }
         print(f"Request data: {user_data}")
         response1 = self.client.post('/api/v1/users/', json=user_data)
         self.assertEqual(response1.status_code, 201)
         print(f"Response (status {response1.status_code}): {response1.json}")
-
+        
         user_id = response1.json['id']
-    
+
         print("\n2. Creating place with invalid data...")
-    
         place_data = {
             "title": "My Place",
             "description": "A beautiful place",

@@ -13,20 +13,29 @@ review_model = api.model('Review', {
 
 @api.route('/')
 class ReviewList(Resource):
-    @api.expect(review_model)
+    @api.expect(review_model, validate=True)
     @api.response(201, 'Review successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
         """Register a new review"""
         review_data = api.payload
-        new_review = facade.create_review(review_data)
-        return {
-            'id': new_review.id,
-            'text': new_review.text,
-            'rating': new_review.rating,
-            'user_id': new_review.user_id,
-            'place_id': new_review.place_id
-        }, 201
+        new_user = facade.get_user(review_data['user_id'])
+        if not new_user:
+            return {'error': 'User not found'}, 404
+        new_place = facade.get_place(review_data['place_id'])
+        if not new_place:
+            return {'error': 'Place not found'}, 404
+        try:
+            new_review = facade.create_review(review_data)
+            return {
+                'id': new_review.id,
+                'text': new_review.text,
+                'rating': new_review.rating,
+                'user_id': new_review.user_id,
+                'place_id': new_review.place_id
+            }, 201
+        except ValueError as e:
+            return {'error': str(e)}, 400
 
     @api.response(200, 'List of reviews retrieved successfully')
     def get(self):
@@ -58,7 +67,7 @@ class ReviewResource(Resource):
         else:
             return {'error': 'Review not found'}, 404
 
-    @api.expect(review_model)
+    @api.expect(review_model, validate=True)
     @api.response(200, 'Review updated successfully')
     @api.response(404, 'Review not found')
     @api.response(400, 'Invalid input data')

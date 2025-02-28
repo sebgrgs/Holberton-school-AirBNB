@@ -45,8 +45,6 @@ class PlaceList(Resource):
         """Register a new place"""
         place_data = api.payload
         try:
-            # Convert price to float for validation
-            place_data['price'] = float(place_data['price'])
             new_place = facade.create_place(place_data)
             return {
                 'id': new_place.id,
