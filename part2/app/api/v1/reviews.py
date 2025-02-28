@@ -103,4 +103,3 @@ class PlaceReviewList(Resource):
             } for review in reviews], 200
         else:
             return {'message': 'Place not found'}, 404
-        pass
