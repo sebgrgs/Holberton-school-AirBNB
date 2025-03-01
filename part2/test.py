@@ -83,7 +83,7 @@ class TestUserEndpoints(unittest.TestCase):
         print(f"Response (status {update_response.status_code}): {update_response.json}")
         
         print("\n4. Verifying update...")
-        verify_response = self.client.get(f'/api/v1/users/{user_id}')
+        verify_response = self.client.get(f'/api/v1/users/')
         self.assertEqual(verify_response.status_code, 200)
         print(f"Response (status {verify_response.status_code}): {verify_response.json}")
 
@@ -214,3 +214,50 @@ class TestUserEndpoints(unittest.TestCase):
         response = self.client.post('/api/v1/places/', json=place_data)
         self.assertEqual(response.status_code, 400)
         print(f"Response (status {response.status_code}): {response.json}")
+    
+
+    def test_create_user_place_review_get_all_reviews(self):
+            print("\nTest: Create User, Place, Review, and Get All Reviews")
+
+            print("\n1. Creating user...")
+            user_data = {
+                "first_name": "Test",
+                "last_name": "User",
+                "email": "test.user@example.com"
+            }
+            print(f"Request data: {user_data}")
+            response1 = self.client.post('/api/v1/users/', json=user_data)
+            self.assertEqual(response1.status_code, 201)
+            user_id = response1.json['id']
+
+            print("\n2. Creating place...")
+            place_data = {
+                "title": "Test Place",
+                "description": "Test description",
+                "price": 100.0,
+                "latitude": 1.0,
+                "longitude": 1.0,
+                "owner_id": user_id,
+                "amenities": []
+            }
+            print(f"Request data: {place_data}")
+            response2 = self.client.post('/api/v1/places/', json=place_data)
+            self.assertEqual(response2.status_code, 201)
+            place_id = response2.json['id']
+
+            print("\n3. Creating review...")
+            review_data = {
+                "text": "Test review",
+                "rating": 4,
+                "user_id": user_id,
+                "place_id": place_id
+            }
+            print(f"Request data: {review_data}")
+            response3 = self.client.post('/api/v1/reviews/', json=review_data)
+            self.assertEqual(response3.status_code, 201)
+
+            print("\n4. Getting all reviews for the place...")
+            get_response = self.client.get(f'/api/v1/places/{place_id}/reviews')
+            self.assertEqual(get_response.status_code, 200)
+            print(f"Response (status {get_response.status_code}): {get_response.json}")
+

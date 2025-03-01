@@ -45,6 +45,9 @@ class PlaceList(Resource):
         """Register a new place"""
         place_data = api.payload
         try:
+            user = facade.get_user(place_data['owner_id'])
+            if not user:
+                return {'error': 'Owner not found'}, 404
             new_place = facade.create_place(place_data)
             return {
                 'id': new_place.id,
@@ -120,16 +123,43 @@ class PlaceResource(Resource):
     def put(self, place_id):
         """Update a place's information"""
         place_data = api.payload
-        updated_place = facade.update_place(place_id, place_data)
-        if not updated_place:
+
+        place = facade.get_place(place_id)
+        if not place:
             return {'error': 'Place not found'}, 404
-        return {
-                'id': updated_place.id,
-                'title': updated_place.title,
-                'description': updated_place.description,
-                'price': updated_place.price,
-                'latitude': updated_place.latitude,
-                'longitude': updated_place.longitude,
-                'owner_id': updated_place.owner_id,
-                'amenities': updated_place.amenities
-            }, 200
+
+        try:
+            user = facade.get_user(place_data['owner_id'])
+            if not user:
+                return {'error': 'Owner not found'}, 404
+            updated_place = facade.update_place(place_id, place_data)
+            return {
+                    'id': updated_place.id,
+                    'title': updated_place.title,
+                    'description': updated_place.description,
+                    'price': updated_place.price,
+                    'latitude': updated_place.latitude,
+                    'longitude': updated_place.longitude,
+                    'owner_id': updated_place.owner_id,
+                    'amenities': updated_place.amenities
+                }, 200
+        except ValueError as e:
+            return {'error': str(e)}, 400
+
+    @api.route('/<place_id>/reviews')
+    class PlaceReviewList(Resource):
+        @api.response(200, 'List of reviews for the place retrieved successfully')
+        @api.response(404, 'Place not found')
+        def get(self, place_id):
+            """Get all reviews for a specific place"""
+            reviews = facade.get_reviews_by_place(place_id)
+            if reviews:
+                return [{
+                    'id': review.id,
+                    'text': review.text,
+                    'rating': review.rating,
+                    'user_id': review.user_id,
+                    'place_id': review.place_id
+                } for review in reviews], 200
+            else:
+                return {'error': 'Place not found'}, 404

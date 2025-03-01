@@ -20,7 +20,6 @@ class UserList(Resource):
         """Register a new user"""
         user_data = api.payload
 
-        # Simulate email uniqueness check
         existing_user = facade.get_user_by_email(user_data['email'])
         if existing_user:
             return {'error': 'Email already registered'}, 400
@@ -68,12 +67,15 @@ class UserResource(Resource):
         """Update user details by ID"""
         user_data = api.payload
 
-        # Check if user exists
         user = facade.get_user(user_id)
         if not user:
             return {'error': 'User not found'}, 404
 
         try:
+            existing_user = facade.get_user_by_email(user_data['email'])
+            if existing_user:
+                return {'error': 'Email already registered'}, 400
+
             updated_user = facade.update_user(user_id, **user_data)
             return {
                 'id': updated_user.id,

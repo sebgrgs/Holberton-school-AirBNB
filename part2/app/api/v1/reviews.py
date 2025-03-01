@@ -3,7 +3,6 @@ from app.services import facade
 
 api = Namespace('reviews', description='Review operations')
 
-# Define the review model for input validation and documentation
 review_model = api.model('Review', {
     'text': fields.String(required=True, description='Text of the review'),
     'rating': fields.Integer(required=True, description='Rating of the place (1-5)'),
@@ -74,8 +73,19 @@ class ReviewResource(Resource):
     def put(self, review_id):
         """Update a review's information"""
         review_data = api.payload
-        updated_review = facade.update_review(review_id, review_data)  
-        if updated_review:
+
+        review = facade.get_review(review_id)
+        if not review:
+            return {'error': 'Review not found'}, 404
+
+        try:
+            user = facade.get_user(review_data['user_id'])
+            if not user:
+                return {'error': 'User not found'}, 404
+            place = facade.get_place(review_data['place_id'])
+            if not place:
+                return {'error': 'Place not found'}, 404
+            updated_review = facade.update_review(review_id, review_data)  
             return {
                 'id': updated_review.id,
                 'text': updated_review.text,
@@ -83,8 +93,8 @@ class ReviewResource(Resource):
                 'user_id': updated_review.user_id,
                 'place_id': updated_review.place_id
             }, 200
-        else:
-            return {'error': 'Review not found'}, 404
+        except ValueError as e:
+            return {'error': str(e)}, 400
 
     @api.response(200, 'Review deleted successfully')
     @api.response(404, 'Review not found')
