@@ -87,8 +87,8 @@ class TestUserEndpoints(unittest.TestCase):
         self.assertEqual(verify_response.status_code, 200)
         print(f"Response (status {verify_response.status_code}): {verify_response.json}")
 
-    def test_create_user_place(self):
-        print("\nTest: Create User and Place")
+    def test_create_user_place_and_update(self):
+        print("\nTest: Create User and Place and update")
 
         print("\n1. Creating user...")
         user_data = {
@@ -232,7 +232,7 @@ class TestUserEndpoints(unittest.TestCase):
 
             print("\n2. Creating place...")
             place_data = {
-                "title": "Test Place",
+                "title": "Test",
                 "description": "Test description",
                 "price": 100.0,
                 "latitude": 1.0,
@@ -260,4 +260,114 @@ class TestUserEndpoints(unittest.TestCase):
             get_response = self.client.get(f'/api/v1/places/{place_id}/reviews')
             self.assertEqual(get_response.status_code, 200)
             print(f"Response (status {get_response.status_code}): {get_response.json}")
+        
+    def test_create_user_place_place_same_title(self):
+        print("\nTest: Create User, Place, Place with same title")
 
+        print("\n1. Creating user...")
+        user_data = {
+            "first_name": "Test",
+            "last_name": "User",
+            "email": "test.user@email.com"
+        }
+        print(f"Request data: {user_data}")
+        response1 = self.client.post('/api/v1/users/', json=user_data)
+        self.assertEqual(response1.status_code, 201)
+        user_id = response1.json['id']
+
+        print("\n2. Creating place...")
+        place_data = {
+            "title": "Test Place",
+            "description": "Test description",
+            "price": 100.0,
+            "latitude": 1.0,
+            "longitude": 1.0,
+            "owner_id": user_id,
+            "amenities": []
+        }
+        print(f"Request data: {place_data}")
+        response2 = self.client.post('/api/v1/places/', json=place_data)
+        self.assertEqual(response2.status_code, 201)
+        place_id = response2.json['id']
+
+        print("\n3. Creating place with same title...")
+        place_data = {
+            "title": "Test Place",
+            "description": "Test description",
+            "price": 100.0,
+            "latitude": 1.0,
+            "longitude": 1.0,
+            "owner_id": user_id,
+            "amenities": []
+        }
+        print(f"Request data: {place_data}")
+        response3 = self.client.post('/api/v1/places/', json=place_data)
+        self.assertEqual(response3.status_code, 400)
+        print(f"Response (status {response3.status_code}): {response3.json}")
+
+    def test_create_user_place_and_update_place_same_title(self):
+        print("\nTest: Create User and Place and update place with same title")
+
+        print("\n1. Creating user...")
+        user_data = {
+            "first_name": "Jane",
+            "last_name": "Doe",
+            "email": "aaaaaa@aaa.aa"
+        }
+        print(f"Request data: {user_data}")
+        response1 = self.client.post('/api/v1/users/', json=user_data)
+        self.assertEqual(response1.status_code, 201)
+        print(f"Response (status {response1.status_code}): {response1.json}")
+        
+        user_id = response1.json['id']
+
+        print("\n2. Creating place...")
+        place_data = {
+            "title": "New place",
+            "description": "A beautiful place",
+            "price": 100.0,
+            "latitude": 1.0,
+            "longitude": 1.0,
+            "owner_id": user_id,
+            "amenities": []
+        }
+        print(f"Request data: {place_data}")
+        response = self.client.post('/api/v1/places/', json=place_data)
+        self.assertEqual(response.status_code, 201)
+        print(f"Response (status {response.status_code}): {response.json}")
+
+        place_id = response.json['id']
+
+        print("\n3. Getting place...")
+        get_response = self.client.get(f'/api/v1/places/{place_id}')
+        self.assertEqual(get_response.status_code, 200)
+        print(f"Response (status {get_response.status_code}): {get_response.json}")
+
+        print("\n4. Creating another place...")
+        place_data = {
+            "title": "Another place",
+            "description": "A beautiful place",
+            "price": 100.0,
+            "latitude": 1.0,
+            "longitude": 1.0,
+            "owner_id": user_id,
+            "amenities": []
+        }
+        print(f"Request data: {place_data}")
+        response = self.client.post('/api/v1/places/', json=place_data)
+        self.assertEqual(response.status_code, 201)
+        print(f"Response (status {response.status_code}): {response.json}")
+
+        print("\n5. Updating place with same title...")
+        update_response = self.client.put(f'/api/v1/places/{place_id}', json={
+            "title": "Another place",
+            "description": "A beautiful place",
+            "price": 50.0,
+            "latitude": 2.0,
+            "longitude": 0.0,
+            "owner_id": user_id,
+            "amenities": []
+        })
+        self.assertEqual(update_response.status_code, 400)
+        print(f"Response (status {update_response.status_code}): {update_response.json}")
+    

@@ -513,6 +513,37 @@ class TestAPI(unittest.TestCase):
             "amenities": []
         })
         self.assertEqual(response.status_code, 404)
-        
+
+    def test_update_place_used_title(self):
+            # Create a place with a unique title
+            place_title = f"Unique Place {uuid.uuid4()}"
+            response = self.client.post('/api/v1/places/', json={
+                "title": place_title,
+                "description": "A unique place description",
+                "price": 100.0,
+                "latitude": 45.0,
+                "longitude": -75.0,
+                "owner_id": self.user_id,
+                "amenities": []
+            })
+            self.assertEqual(response.status_code, 201, f"Error creating unique place: {response.json}")
+            unique_place_id = response.json.get("id")
+
+            # Try to update another place with the same title
+            response = self.client.put(f'/api/v1/places/{unique_place_id}', json={
+                "title": place_title,
+                "description": "Updated description",
+                "price": 120.0,
+                "latitude": 46.0,
+                "longitude": -76.0,
+                "owner_id": self.user_id,
+                "amenities": []
+            })
+            self.assertEqual(response.status_code, 200, f"Expected 200 but got {response.status_code}, response: {response.json}")
+
+    def test_get_review_by_place(self):
+        response = self.client.get(f'/api/v1/places/{self.place_id}/reviews')
+        self.assertEqual(response.status_code, 200)
+
 if __name__ == '__main__':
     unittest.main()

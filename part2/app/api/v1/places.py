@@ -45,6 +45,9 @@ class PlaceList(Resource):
         """Register a new place"""
         place_data = api.payload
         try:
+            place_title = facade.get_place_by_title(place_data['title'])
+            if place_title:
+                return {'error': 'Place with the same title already exists'}, 400
             user = facade.get_user(place_data['owner_id'])
             if not user:
                 return {'error': 'Owner not found'}, 404
@@ -129,6 +132,9 @@ class PlaceResource(Resource):
             return {'error': 'Place not found'}, 404
 
         try:
+            place_title = facade.get_place_by_title(place_data['title'])
+            if place_title and place_title.id != place_id:
+                return {'error': 'Place with the same title already exists'}, 400
             user = facade.get_user(place_data['owner_id'])
             if not user:
                 return {'error': 'Owner not found'}, 404

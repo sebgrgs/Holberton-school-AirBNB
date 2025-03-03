@@ -74,10 +74,8 @@ class HBnBFacade:
 
     def create_place(self, place_data):
         """Create new place"""
-        # Extract amenities before creating place
         amenity_ids = [amenity['id'] for amenity in place_data.pop('amenities', [])]
         
-        # Create place instance
         place = Place(
             title=place_data['title'],
             description=place_data['description'],
@@ -158,3 +156,6 @@ class HBnBFacade:
 
     def delete_review(self, review_id):
         return self.review_repo.delete(review_id)
+    
+    def get_place_by_title(self, title):
+        return self.place_repo.get_by_attribute('title', title)
