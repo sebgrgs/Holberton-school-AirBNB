@@ -1,5 +1,6 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Namespace('places', description='Place operations')
 
@@ -38,17 +39,21 @@ place_model = api.model('Place', {
 
 @api.route('/')
 class PlaceList(Resource):
+    @jwt_required()
     @api.expect(place_model, validate=True)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
         """Register a new place"""
+        current_user = get_jwt_identity()
         place_data = api.payload
         try:
             place_title = facade.get_place_by_title(place_data['title'])
             if place_title:
                 return {'error': 'Place with the same title already exists'}, 400
             user = facade.get_user(place_data['owner_id'])
+            if place_data['owner_id'] != current_user['id']:
+                return {'error': 'You can only create places for your own account'}, 403
             if not user:
                 return {'error': 'Owner not found'}, 404
             new_place = facade.create_place(place_data)
@@ -90,7 +95,7 @@ class PlaceResource(Resource):
         if not place:
             return {'error': 'Place not found'}, 404
         
-        owner = facade.get_user(place.owner_id)
+        owner = facade.get_user(place.owner_id) # bring the object by user id, not a string
         if not owner:
             return {'error': 'Owner not found'}, 404
 
@@ -123,19 +128,26 @@ class PlaceResource(Resource):
     @api.response(200, 'Place updated successfully')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
+    @jwt_required()
     def put(self, place_id):
         """Update a place's information"""
         place_data = api.payload
-
+        current_user = get_jwt_identity()
         place = facade.get_place(place_id)
-        if not place:
-            return {'error': 'Place not found'}, 404
 
         try:
             place_title = facade.get_place_by_title(place_data['title'])
+            place = facade.get_place(place_id)
+            if not place:
+                return {'error': 'Place not found'}, 404
+            
+            if place_data['owner_id'] != current_user['id']:
+                return {'error': 'Unauthorized action'}, 403
+            
             if place_title and place_title.id != place_id:
                 return {'error': 'Place with the same title already exists'}, 400
             user = facade.get_user(place_data['owner_id'])
+
             if not user:
                 return {'error': 'Owner not found'}, 404
             updated_place = facade.update_place(place_id, place_data)
@@ -169,3 +181,4 @@ class PlaceResource(Resource):
                 } for review in reviews], 200
             else:
                 return {'error': 'Place not found'}, 404
+

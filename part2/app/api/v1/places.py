@@ -1,5 +1,7 @@
 from flask_restx import Namespace, Resource, fields
 from app.services import facade
+from flask_restx import Namespace, Resource, fields
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Namespace('places', description='Place operations')
 
@@ -38,17 +40,21 @@ place_model = api.model('Place', {
 
 @api.route('/')
 class PlaceList(Resource):
+    @jwt_required()
     @api.expect(place_model, validate=True)
     @api.response(201, 'Place successfully created')
     @api.response(400, 'Invalid input data')
     def post(self):
         """Register a new place"""
+        current_user = get_jwt_identity()
         place_data = api.payload
         try:
             place_title = facade.get_place_by_title(place_data['title'])
             if place_title:
                 return {'error': 'Place with the same title already exists'}, 400
             user = facade.get_user(place_data['owner_id'])
+            if place_data['owner_id'] != current_user:
+                return {'error': 'You can only create places for your own account'}, 403
             if not user:
                 return {'error': 'Owner not found'}, 404
             new_place = facade.create_place(place_data)

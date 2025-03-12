@@ -39,7 +39,7 @@ class HBnBFacade:
 
         updates = {}
         for field, value in user_data.items():
-            if hasattr(user, field):
+            if hasattr(user, field) and field not in ['password', 'e-mail', 'is_admin']:
                 updates[field] = value
 
         updated_user = self.user_repo.update(user_id, updates)
@@ -165,3 +165,11 @@ class HBnBFacade:
     
     def get_place_by_title(self, title):
         return self.place_repo.get_by_attribute('title', title)
+    
+    def get_review_by_user_and_place(self, user_id, place_id):
+        """Get a review by user ID and place ID"""
+        reviews = self.review_repo.get_all()
+        for review in reviews:
+            if review.user_id == user_id and review.place_id == place_id:
+                return review
+        return None
