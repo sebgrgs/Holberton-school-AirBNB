@@ -1,16 +1,19 @@
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 from flask_restx import Api
+from flask_bcrypt import Bcrypt
+from flask_jwt_extended import JWTManager
+
+db = SQLAlchemy()
+jwt = JWTManager()
+bcrypt = Bcrypt()
+
 from app.api.v1.users import api as users_ns
 from app.api.v1.amenities import api as amenities_ns
 from app.api.v1.places import api as places_ns
 from app.api.v1.reviews import api as reviews_ns
 from app.api.v1.auth import api as auth_ns
 from app.api.v1.protected import api as protected_ns
-from flask_bcrypt import Bcrypt
-from flask_jwt_extended import JWTManager
-
-jwt = JWTManager()
-bcrypt = Bcrypt()
 
 def create_app(config_class="config.DevelopmentConfig"):
     app = Flask(__name__)
@@ -24,8 +27,6 @@ def create_app(config_class="config.DevelopmentConfig"):
                       'description': 'JWT Authorization header using the Bearer scheme. Example: "Authorization: Bearer {token}"'
                   }
               })
-    bcrypt.init_app(app)
-    jwt.init_app(app)
     # Register the namespaces
     api.add_namespace(users_ns, path='/api/v1/users')
     api.add_namespace(amenities_ns, path='/api/v1/amenities')
@@ -33,4 +34,9 @@ def create_app(config_class="config.DevelopmentConfig"):
     api.add_namespace(reviews_ns, path='/api/v1/reviews')
     api.add_namespace(auth_ns, path='/api/v1/auth')
     api.add_namespace(protected_ns, path='/api/v1/protected')
+
+    db.init_app(app)
+    bcrypt.init_app(app)
+    jwt.init_app(app)
+
     return app

@@ -1,4 +1,4 @@
-from app.persistence.repository import InMemoryRepository
+from app.persistence.repository import InMemoryRepository, SQLAlchemyRepository, UserRepository
 from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
@@ -6,19 +6,14 @@ from app.models.review import Review
 
 class HBnBFacade:
     def __init__(self):
-        self.user_repo = InMemoryRepository()
-        self.amenity_repo = InMemoryRepository()
-        self.place_repo = InMemoryRepository()
-        self.review_repo = InMemoryRepository()
+        self.user_repo = UserRepository()
+        self.amenity_repo = SQLAlchemyRepository(Amenity)
+        self.place_repo = SQLAlchemyRepository(Place)
+        self.review_repo = SQLAlchemyRepository(Review)
     
     def create_user(self, user_data):
-        hashed_password = User.hash_password(User, user_data['password'])
-        user = User(
-            email=user_data['email'],
-            first_name=user_data['first_name'],
-            last_name=user_data['last_name'],
-            password=hashed_password
-        )
+        user = User(**user_data)
+        user.hash_password(user_data['password'])
         self.user_repo.add(user)
         return user
 
@@ -39,7 +34,7 @@ class HBnBFacade:
 
         updates = {}
         for field, value in user_data.items():
-            if hasattr(user, field) and field not in ['password', 'e-mail', 'is_admin']:
+            if hasattr(user, field):
                 updates[field] = value
 
         updated_user = self.user_repo.update(user_id, updates)
