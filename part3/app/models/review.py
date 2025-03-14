@@ -1,6 +1,7 @@
 from app.models.base import BaseModel
 from app import db
 from sqlalchemy.ext.hybrid import hybrid_property
+import re
 
 class Review(BaseModel):
     """Model class representing a review"""
@@ -9,13 +10,13 @@ class Review(BaseModel):
         
     _text = db.Column(db.String(500), nullable=False)
     _rating = db.Column(db.Integer, nullable=False)
-    _place_id = db.Column(db.String(100), nullable=False)
-    _user_id = db.Column(db.String(100), nullable=False)
+    _place_id = db.Column(db.String(100), db.ForeignKey('places.id'), nullable=False)
+    _user_id = db.Column(db.String(100), db.ForeignKey('users.id'), nullable=False)
     
     @hybrid_property
     def text(self):
         """Get the review text"""
-        return self.__text
+        return self._text
     
     @text.setter
     def text(self, value):

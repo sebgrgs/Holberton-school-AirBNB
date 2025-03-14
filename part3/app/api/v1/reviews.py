@@ -16,6 +16,7 @@ class ReviewList(Resource):
     @api.expect(review_model, validate=True)
     @api.response(201, 'Review successfully created')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Unauthorized action')
     @jwt_required()
     def post(self):
         """Register a new review"""
@@ -26,12 +27,12 @@ class ReviewList(Resource):
         new_user = facade.get_user(review_data['user_id'])
         current_user = get_jwt_identity()
         if place.owner_id == current_user['id']:
-            return {'error': 'You cannot create reviews for your own places'}, 403
+            return {'error': 'You cannot create reviews for your own places'}, 400
         existing_review = facade.get_review_by_user_and_place(
             user_id=review_data['user_id'], place_id=review_data['place_id']
         )
         if existing_review:
-            return {'error': 'User has already reviewed this place'}, 403
+            return {'error': 'User has already reviewed this place'}, 400
         if not new_user:
             return {'error': 'User not found'}, 404
         try:
@@ -80,6 +81,7 @@ class ReviewResource(Resource):
     @api.response(200, 'Review updated successfully')
     @api.response(404, 'Review not found')
     @api.response(400, 'Invalid input data')
+    @api.response(403, 'Unauthorized action')
     @jwt_required()
     def put(self, review_id):
         """Update a review's information"""

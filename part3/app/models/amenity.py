@@ -1,14 +1,15 @@
 import re
 from app import db
 from sqlalchemy.ext.hybrid import hybrid_property
-
 from app.models.base import BaseModel
+from app.models.place import place_amenities
 
 class Amenity(BaseModel):
     
     """Initialize the amenity with provided details"""
     table_name = 'amenities'
     _name=db.Column(db.String(50), nullable=False)
+    places = db.relationship('Place', secondary=place_amenities, backref='amenities', lazy=True)
     
     @hybrid_property
     def name(self):

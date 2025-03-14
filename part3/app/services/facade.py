@@ -1,4 +1,4 @@
-from app.persistence.repository import InMemoryRepository, SQLAlchemyRepository, UserRepository
+from app.persistence.repository import InMemoryRepository, SQLAlchemyRepository, UserRepository, AmenityRepository, PlaceRepository, ReviewRepository
 from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
@@ -7,9 +7,9 @@ from app.models.review import Review
 class HBnBFacade:
     def __init__(self):
         self.user_repo = UserRepository()
-        self.amenity_repo = SQLAlchemyRepository(Amenity)
-        self.place_repo = SQLAlchemyRepository(Place)
-        self.review_repo = SQLAlchemyRepository(Review)
+        self.amenity_repo = AmenityRepository()
+        self.place_repo = PlaceRepository()
+        self.review_repo = ReviewRepository()
     
     def create_user(self, user_data):
         user = User(**user_data)
@@ -82,7 +82,7 @@ class HBnBFacade:
             description=place_data['description'],
             price=place_data['price'],
             latitude=place_data['latitude'],
-            longitude=place_data['longitude']
+            longitude=place_data['longitude'],
             owner_id=place_data['owner_id'],
             amenities=amenity_ids
         )
@@ -115,12 +115,7 @@ class HBnBFacade:
         return updated_place
     
     def create_review(self, review_data):
-        review = Review(
-            text=review_data['text'],
-            rating=review_data['rating'],
-            place_id=review_data['place_id'],
-            user_id=review_data['user_id']
-        )
+        review = Review(**review_data)
         self.review_repo.add(review)
         return review
 
