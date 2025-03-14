@@ -1,19 +1,19 @@
 import re
+from app import db
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from app.models.base import BaseModel
 
 class Amenity(BaseModel):
-    """Model class representing an amenity"""
     
-    def __init__(self, name):
-        """Initialize the amenity with provided details"""
-        super().__init__()
-        self.name = name
+    """Initialize the amenity with provided details"""
+    table_name = 'amenities'
+    _name=db.Column(db.String(50), nullable=False)
     
-    @property
+    @hybrid_property
     def name(self):
         """Get the name of the amenity"""
-        return self.__name
+        return self._name
     
     @name.setter
     def name(self, value):
@@ -22,4 +22,4 @@ class Amenity(BaseModel):
             raise ValueError("Name cannot be empty")
         if len(value) > 50:
             raise ValueError("Name cannot be longer than 50 characters")
-        self.__name = value
+        self._name = value
