@@ -4,8 +4,8 @@ from sqlalchemy.ext.hybrid import hybrid_property
 from app.models.base import BaseModel
 
 place_amenities = db.Table('place_amenities',
-    db.Column('place_id', db.Integer, db.ForeignKey('places.id'), primary_key=True),
-    db.Column('amenity_id', db.Integer, db.ForeignKey('amenities.id'), primary_key=True)
+    db.Column('place_id', db.String(36), db.ForeignKey('places.id'), primary_key=True),
+    db.Column('amenity_id', db.String(36), db.ForeignKey('amenities.id'), primary_key=True)
 )
 
 class Place(BaseModel):
@@ -17,7 +17,7 @@ class Place(BaseModel):
     _price = db.Column(db.Float, nullable=False)
     _latitude = db.Column(db.Float, nullable=False)
     _longitude = db.Column(db.Float, nullable=False)
-    _owner_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    _owner_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
     _reviews = db.relationship('Review', backref='place', lazy=True)
     _amenities = db.relationship('Amenity', secondary=place_amenities, backref='places', lazy=True)
     

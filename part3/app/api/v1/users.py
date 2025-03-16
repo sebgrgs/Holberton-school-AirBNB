@@ -6,7 +6,6 @@ from flask import request
 from app.models.user import User
 from app import db
 from app.persistence.repository import SQLAlchemyRepository
-from app.api.v1.auth import admin_required
 
 api = Namespace('users', description='User operations')
 
@@ -24,11 +23,11 @@ class AdminUserCreate(Resource):
     @api.response(200, 'User successfully created')
     @api.response(400, 'Email already registered')
     @api.response(403, 'Admin privileges required')
-    #@jwt_required()
+    @jwt_required()
     def post(self):
-        #current_user = get_jwt_identity()
-        #if not current_user.get('is_admin'):
-            #return {'error': 'Admin privileges required'}, 403
+        current_user = get_jwt_identity()
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
 
         user_data = request.json
         email = user_data.get('email')
@@ -82,7 +81,7 @@ class UserResource(Resource):
     @api.response(400, 'Invalid input data')
     @api.response(403, 'Unauthorized action')
     @jwt_required()
-    @admin_required()
+    #@admin_required()
     def put(self, user_id):
         """Update user details by ID"""
         current_user = get_jwt_identity()
