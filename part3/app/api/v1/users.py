@@ -9,7 +9,8 @@ from app.persistence.repository import SQLAlchemyRepository
 
 api = Namespace('users', description='User operations')
 
-# Define the user model for input validation and documentation
+#----------------------------------------------user_model for input------------------------------------------------
+
 user_model = api.model('User', {
     'first_name': fields.String(required=True, description='First name of the user'),
     'last_name': fields.String(required=True, description='Last name of the user'),
@@ -17,8 +18,13 @@ user_model = api.model('User', {
     'password': fields.String(required=True, description='Password of the user')
 })
 
+#----------------------------------------------basic endpoint------------------------------------------------
+
 @api.route('/')
 class AdminUserCreate(Resource):
+
+#----------------------------------------------post method------------------------------------------------
+
     @api.expect(user_model, validate=True)
     @api.response(200, 'User successfully created')
     @api.response(400, 'Email already registered')
@@ -49,8 +55,7 @@ class AdminUserCreate(Resource):
         except ValueError as e:
             return {'error': str(e)}, 400
     
-
-
+#----------------------------------------------get all users method------------------------------------------------
 
     @api.response(201, 'Success')
     def get(self):
@@ -63,9 +68,13 @@ class AdminUserCreate(Resource):
             'email': user.email
         } for user in users], 200
 
+#----------------------------------------------search for user_id endpoint------------------------------------------------
 
 @api.route('/<user_id>')
 class UserResource(Resource):
+
+#----------------------------------------------get by user id method ------------------------------------------------
+
     @api.response(200, 'User details retrieved successfully')
     @api.response(404, 'User not found')
     def get(self, user_id):
@@ -74,7 +83,9 @@ class UserResource(Resource):
         if not user:
             return {'error': 'User not found'}, 404
         return {'id': user.id, 'first_name': user.first_name, 'last_name': user.last_name, 'email': user.email}, 200
-    
+
+#----------------------------------------------update method by user id------------------------------------------------
+   
     @api.expect(user_model, validate=False)
     @api.response(200, 'User successfully updated')
     @api.response(404, 'User not found')
@@ -105,6 +116,8 @@ class UserResource(Resource):
                 return {'error': 'Email already in use'}, 400
         try:
             if not current_user.get('is_admin'):
+                if 'password' in user_data or 'email' in user_data:
+                    return {'error': 'Unauthorized action, youre not allowed to modify password or e-mail'}, 403
                 updated_user = facade.update_user(user_id, **user_data)
                 response_data = {
                     'first_name': updated_user.first_name,

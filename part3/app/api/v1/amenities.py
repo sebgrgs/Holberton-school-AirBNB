@@ -5,13 +5,19 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Namespace('amenities', description='Amenity operations')
 
-# Define the amenity model for input validation and documentation
+#----------------------------------------------amenity_model for input------------------------------------------------
+
 amenity_model = api.model('Amenity', {
     'name': fields.String(required=True, description='Name of the amenity')
 })
 
+#----------------------------------------------basic endpoint------------------------------------------------
+
 @api.route('/')
 class AmenityList(Resource):
+
+#----------------------------------------------post method------------------------------------------------
+
     @api.expect(amenity_model, validate=True)
     @api.response(201, 'Amenity successfully created')
     @api.response(400, 'Invalid input data')
@@ -25,14 +31,21 @@ class AmenityList(Resource):
         new_amenity = facade.create_amenity(amenity_data)
         return {'id': new_amenity.id, 'name': new_amenity.name}, 201
 
+#----------------------------------------------get method------------------------------------------------
+
     @api.response(200, 'List of amenities retrieved successfully')
     def get(self):
         """Retrieve a list of all amenities"""
         amenities = facade.get_all_amenities()
         return [{'id': amenity.id, 'name': amenity.name} for amenity in amenities], 200
 
+#----------------------------------------------search for amenity_id endpoint------------------------------------------------
+
 @api.route('/<amenity_id>')
 class AmenityResource(Resource):
+
+#----------------------------------------------get method------------------------------------------------
+
     @api.response(200, 'Amenity details retrieved successfully')
     @api.response(404, 'Amenity not found')
     def get(self, amenity_id):
@@ -41,8 +54,10 @@ class AmenityResource(Resource):
         if not amenity:
             return {'error': 'Amenity not found'}, 404
         return {'id': amenity.id, 'name': amenity.name}, 200
+
+#----------------------------------------------delete method------------------------------------------------
     
-    @api.response(204, 'Amenity deleted successfully')
+    @api.response(200, 'Amenity deleted successfully')
     @api.response(404, 'Amenity not found')
     @api.response(403, 'Admin privileges required')
     @jwt_required()
@@ -55,7 +70,9 @@ class AmenityResource(Resource):
         if not current_user.get('is_admin'):
             return {'error': 'Admin privileges required'}, 403
         facade.delete_amenity(amenity_id)
-        return {'message': 'Amenity deleted successfully'}, 204
+        return {'message': 'Amenity deleted successfully'}, 200
+
+#----------------------------------------------put method------------------------------------------------
 
     @api.expect(amenity_model, validate=False)
     @api.response(200, 'Amenity updated successfully')

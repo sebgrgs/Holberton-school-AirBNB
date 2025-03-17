@@ -4,6 +4,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Namespace('reviews', description='Review operations')
 
+#----------------------------------------------review_model for input------------------------------------------------
+
 review_model = api.model('Review', {
     'text': fields.String(required=True, description='Text of the review'),
     'rating': fields.Integer(required=True, description='Rating of the place (1-5)'),
@@ -11,8 +13,13 @@ review_model = api.model('Review', {
     'place_id': fields.String(required=True, description='ID of the place')
 })
 
+#----------------------------------------------basic endpoint------------------------------------------------
+
 @api.route('/')
 class ReviewList(Resource):
+
+#----------------------------------------------post method------------------------------------------------
+
     @api.expect(review_model, validate=True)
     @api.response(201, 'Review successfully created')
     @api.response(400, 'Invalid input data')
@@ -47,6 +54,8 @@ class ReviewList(Resource):
         except ValueError as e:
             return {'error': str(e)}, 400
 
+#----------------------------------------------get all reviews method------------------------------------------------
+
     @api.response(200, 'List of reviews retrieved successfully')
     def get(self):
         """Retrieve a list of all reviews"""
@@ -59,8 +68,13 @@ class ReviewList(Resource):
             'place_id': review.place_id
         } for review in reviews], 200
 
+#----------------------------------------------search for review_id endpoint------------------------------------------------
+
 @api.route('/<review_id>')
 class ReviewResource(Resource):
+
+#----------------------------------------------get method for review by id method------------------------------------------------
+
     @api.response(200, 'Review details retrieved successfully')
     @api.response(404, 'Review not found')
     def get(self, review_id):
@@ -76,6 +90,8 @@ class ReviewResource(Resource):
             }, 200
         else:
             return {'error': 'Review not found'}, 404
+
+#----------------------------------------------put method by id------------------------------------------------
 
     @api.expect(review_model, validate=False)
     @api.response(200, 'Review updated successfully')
@@ -112,8 +128,11 @@ class ReviewResource(Resource):
         except ValueError as e:
             return {'error': str(e)}, 400
 
+#----------------------------------------------delete by id method------------------------------------------------
+
     @api.response(200, 'Review deleted successfully')
     @api.response(404, 'Review not found')
+    @jwt_required()
     def delete(self, review_id):
         """Delete a review"""
         review = facade.get_review(review_id)
@@ -125,14 +144,19 @@ class ReviewResource(Resource):
         facade.delete_review(review_id)
         return {'message': 'Review deleted successfully'}, 200
 
+#---------------------------------------------- endpoint to get all reviews from a place id------------------------------------------------
 
 @api.route('/places/<place_id>/reviews')
 class PlaceReviewList(Resource):
+
+#----------------------------------------------get all reviews for a place method------------------------------------------------
+
     @api.response(200, 'List of reviews for the place retrieved successfully')
     @api.response(404, 'Place not found')
     def get(self, place_id):
         """Get all reviews for a specific place"""
         reviews = facade.get_reviews_by_place(place_id)
+        review_exists = facade.get_place(place_id)
         if reviews:
             return [{
                 'id': review.id,
@@ -141,7 +165,9 @@ class PlaceReviewList(Resource):
                 'user_id': review.user_id,
                 'place_id': review.place_id
             } for review in reviews], 200
-        else:
+        elif not review_exists:
             return {'error': 'Place not found'}, 404
+        else:
+            return {'error': 'No reviews found for this place'}, 404
         
     

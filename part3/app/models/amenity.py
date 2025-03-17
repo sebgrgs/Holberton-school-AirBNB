@@ -10,10 +10,14 @@ class Amenity(BaseModel):
 
     _name = db.Column(db.String(50), nullable=False)
 
+#-----------------------------------name.getter-----------------------------------
+
     @hybrid_property
     def name(self):
         """Get the name of the amenity"""
         return self._name
+
+#-----------------------------------name.setter-----------------------------------
 
     @name.setter
     def name(self, value):

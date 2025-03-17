@@ -4,10 +4,14 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Namespace('places', description='Place operations')
 
+#----------------------------------------------amenity_model for input in Place------------------------------------------------
+
 amenity_model = api.model('PlaceAmenity', {
     'id': fields.String(description='Amenity ID'),
     'name': fields.String(description='Name of the amenity')
 })
+
+#----------------------------------------------user_model for input in Place------------------------------------------------
 
 user_model = api.model('PlaceUser', {
     'id': fields.String(description='User ID'),
@@ -16,6 +20,8 @@ user_model = api.model('PlaceUser', {
     'email': fields.String(description='Email of the owner')
 })
 
+#----------------------------------------------review_model for input in Place------------------------------------------------
+
 review_model = api.model('PlaceReview', {
     'id': fields.String(description='Review ID'),
     'text': fields.String(description='Text of the review'),
@@ -23,8 +29,8 @@ review_model = api.model('PlaceReview', {
     'user_id': fields.String(description='ID of the user')
 })
 
+#----------------------------------------------place_model for input------------------------------------------------
 
-# Define the place model for input validation and documentation
 place_model = api.model('Place', {
     'title': fields.String(required=True, description='Title of the place'),
     'description': fields.String(description='Description of the place'),
@@ -37,8 +43,13 @@ place_model = api.model('Place', {
     'reviews': fields.List(fields.Nested(review_model), description='List of reviews')
 })
 
+#----------------------------------------------basic endpoint------------------------------------------------
+
 @api.route('/')
 class PlaceList(Resource):
+
+#----------------------------------------------post method------------------------------------------------
+
     @jwt_required()
     @api.expect(place_model, validate=True)
     @api.response(201, 'Place successfully created')
@@ -71,6 +82,8 @@ class PlaceList(Resource):
         except ValueError as e:
             return {'error': str(e)}, 400
 
+#----------------------------------------------get all places method------------------------------------------------
+
     @api.response(200, 'List of places retrieved successfully')
     def get(self):
         """Retrieve a list of all places"""
@@ -85,8 +98,13 @@ class PlaceList(Resource):
             'owner_id': place.owner_id
         } for place in places], 200
 
+#----------------------------------------------search for place_id endpoint------------------------------------------------
+
 @api.route('/<place_id>')
 class PlaceResource(Resource):
+
+#----------------------------------------------get place by id method------------------------------------------------
+
     @api.response(200, 'Place details retrieved successfully')
     @api.response(404, 'Place not found')
     def get(self, place_id):
@@ -123,8 +141,10 @@ class PlaceResource(Resource):
                 },
                 'amenities': amenities
             }, 200
-    
-    @api.response(204, 'Place deleted successfully')
+
+#----------------------------------------------delete method------------------------------------------------
+
+    @api.response(200, 'Place deleted successfully')
     @api.response(403, 'admin privileges required')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
@@ -139,7 +159,9 @@ class PlaceResource(Resource):
         if place.owner_id != current_user['id'] and not current_user.get('is_admin'):
             return {'error': 'Unauthorized action'}, 403
         facade.delete_place(place_id)
-        return {'message': 'Place deleted successfully'}, 204
+        return {'message': 'Place deleted successfully'}, 200
+
+#----------------------------------------------put method------------------------------------------------
 
     @api.expect(place_model, validate=False)
     @api.response(200, 'Place updated successfully')
@@ -189,8 +211,13 @@ class PlaceResource(Resource):
         except ValueError as e:
             return {'error': str(e)}, 400
 
+#----------------------------------------------get all reviews for a place endpoint------------------------------------------------
+
     @api.route('/<place_id>/reviews')
     class PlaceReviewList(Resource):
+
+#----------------------------------------------get all reviews for a place method------------------------------------------------
+
         @api.response(200, 'List of reviews for the place retrieved successfully')
         @api.response(404, 'Place not found')
         def get(self, place_id):

@@ -5,6 +5,8 @@ from app.models.amenity import Amenity
 from app.models.review import Review
 from app import db
 
+#-----------------------------------Repository-----------------------------------
+
 class Repository(ABC):
     @abstractmethod
     def add(self, obj):
@@ -30,6 +32,7 @@ class Repository(ABC):
     def get_by_attribute(self, attr_name, attr_value):
         pass
 
+#-----------------------------------InMemoryRepository-----------------------------------
 
 class InMemoryRepository(Repository):
     def __init__(self):
@@ -55,7 +58,9 @@ class InMemoryRepository(Repository):
 
     def get_by_attribute(self, attr_name, attr_value):
         return next((obj for obj in self._storage.values() if getattr(obj, attr_name) == attr_value), None)
-    
+
+#-----------------------------------SQLAlchemyRepository-----------------------------------
+
 class SQLAlchemyRepository(Repository):
     def __init__(self, model):
         self.model = model
@@ -85,6 +90,8 @@ class SQLAlchemyRepository(Repository):
 
     def get_by_attribute(self, attr_name, attr_value):
         return self.model.query.filter_by(**{attr_name: attr_value}).first()
+
+#-----------------------------------UserRepository-----------------------------------
     
 class UserRepository(SQLAlchemyRepository):
     def __init__(self):
@@ -92,20 +99,26 @@ class UserRepository(SQLAlchemyRepository):
 
     def get_user_by_email(self, email):
         return self.model.query.filter_by(email=email).first()
-    
+
+#-----------------------------------PlaceRepository-----------------------------------
+
 class PlaceRepository(SQLAlchemyRepository):
     def __init__(self):
         super().__init__(Place)
 
     def get_place_by_title(self, title):
         return self.model.query.filter_by(title=title).first()
-    
+
+#-----------------------------------AmenityRepository-----------------------------------
+#     
 class AmenityRepository(SQLAlchemyRepository):
     def __init__(self):
         super().__init__(Amenity)
 
     def get_amenity_by_name(self, name):
         return self.model.query.filter_by(name=name).first()
+
+#-----------------------------------ReviewRepository-----------------------------------
 
 class ReviewRepository(SQLAlchemyRepository):
     def __init__(self):
