@@ -45,14 +45,14 @@ class AdminUserCreate(Resource):
                 'last_name': new_user.last_name,
                 'email': new_user.email,
                 'password': new_user.password
-            }, 201
+            }, 200
         except ValueError as e:
             return {'error': str(e)}, 400
     
 
 
 
-    @api.response(200, 'Success')
+    @api.response(201, 'Success')
     def get(self):
         """List all users"""
         users = facade.get_all_users()
@@ -81,7 +81,6 @@ class UserResource(Resource):
     @api.response(400, 'Invalid input data')
     @api.response(403, 'Unauthorized action')
     @jwt_required()
-    #@admin_required()
     def put(self, user_id):
         """Update user details by ID"""
         current_user = get_jwt_identity()
@@ -92,21 +91,34 @@ class UserResource(Resource):
 
         if not user:
             return {'error': 'User not found'}, 404
+        
+        if not user_data:
+            return {'error': 'No data provided'}, 400
 
         if current_user['id'] != user.id and not current_user.get('is_admin'):
             return {'error': 'Unauthorized action'}, 403
+
         
         if email:
             existing_user = facade.get_user_by_email(email)
             if existing_user:
                 return {'error': 'Email already in use'}, 400
         try:
-            updated_user = facade.update_user(user_id, **user_data)
-            response_data = {
-                'first_name': updated_user.first_name,
-                'last_name': updated_user.last_name
-            }
-            return response_data, 200
+            if not current_user.get('is_admin'):
+                updated_user = facade.update_user(user_id, **user_data)
+                response_data = {
+                    'first_name': updated_user.first_name,
+                    'last_name': updated_user.last_name
+                }
+            elif current_user.get('is_admin'):
+                updated_user = facade.update_user(user_id, **user_data)
+                response_data = {
+                    'first_name': updated_user.first_name,
+                    'last_name': updated_user.last_name,
+                    'email': updated_user.email,
+                    'password': updated_user.password
+                }
+            return response_data, 201
         except ValueError:
             return {'error': 'Invalid input data'}, 400
-        
+           

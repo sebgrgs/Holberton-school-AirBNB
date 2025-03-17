@@ -3,6 +3,7 @@ from app.models.user import User
 from app.models.amenity import Amenity
 from app.models.place import Place
 from app.models.review import Review
+from app import db
 
 class HBnBFacade:
     def __init__(self):
@@ -72,10 +73,14 @@ class HBnBFacade:
             updated_amenity = self.get_amenity(amenity_id)
 
         return updated_amenity
+    
+    def delete_amenity(self, amenity_id):
+        return self.amenity_repo.delete(amenity_id)
 
     def create_place(self, place_data):
         """Create new place"""
         amenity_ids = [amenity['id'] for amenity in place_data.pop('amenities', [])]
+        amenities = db.session.query(Amenity).filter(Amenity.id.in_(amenity_ids)).all()
         
         place = Place(
             title=place_data['title'],
@@ -83,8 +88,8 @@ class HBnBFacade:
             price=place_data['price'],
             latitude=place_data['latitude'],
             longitude=place_data['longitude'],
-            owner_id=place_data['owner_id'],
-            amenities=amenity_ids
+            owner=place_data['owner_id'],
+            amenities=amenities
         )
         
         self.place_repo.add(place)
@@ -113,6 +118,9 @@ class HBnBFacade:
             updated_place = self.get_place(place_id)
 
         return updated_place
+    
+    def delete_place(self, place_id):
+        return self.place_repo.delete(place_id)
     
     def create_review(self, review_data):
         review = Review(**review_data)

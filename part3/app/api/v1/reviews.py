@@ -122,6 +122,8 @@ class ReviewResource(Resource):
             return {'error': 'Review not found'}, 404
         if review.user_id != current_user['id']:
             return {'error': 'Unauthorized action'}, 403
+        if not current_user.get('is_admin'):
+            return {'error': 'Admin privileges required'}, 403
         facade.delete_review(review_id)
         return {'message': 'Review deleted successfully'}, 200
 
@@ -143,3 +145,5 @@ class PlaceReviewList(Resource):
             } for review in reviews], 200
         else:
             return {'error': 'Place not found'}, 404
+        
+    

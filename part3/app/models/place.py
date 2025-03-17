@@ -84,16 +84,16 @@ class Place(BaseModel):
         self._longitude = value
     
     @hybrid_property
-    def owner(self):
+    def owner_id(self):
         """Get the owner of the place"""
-        return self._owner
+        return self._owner_id
     
-    @owner.setter
+    @owner_id.setter
     def owner(self, value):
         """Set the owner of the place"""
         if not value:
             raise ValueError("Owner cannot be empty")
-        self._owner = value
+        self._owner_id = value
 
     @hybrid_property 
     def amenities(self):

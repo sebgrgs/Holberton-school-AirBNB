@@ -15,7 +15,7 @@ class User(BaseModel):
     _email = db.Column(db.String(120), nullable=False, unique=True)
     _password = db.Column(db.String(128), nullable=False)
     _is_admin = db.Column(db.Boolean, default=False)
-    places = db.relationship('Place', backref='owner', lazy=True)
+    places = db.relationship('Place', backref='user', lazy=True)
     reviews = db.relationship('Review', backref='user', lazy=True)
 
     def hash_password(self, password):
@@ -24,7 +24,7 @@ class User(BaseModel):
 
     def verify_password(self, password):
         """Verify the password using bcrypt"""
-        return bcrypt.check_password_hash(self.password, password)
+        return bcrypt.check_password_hash(self._password, password)
 
     @hybrid_property
     def first_name(self):
