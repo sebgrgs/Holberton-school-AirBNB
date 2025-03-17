@@ -5,14 +5,20 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 
 api = Namespace('auth', description='Authentication operations')
 
+#----------------------------------------------login_model for input------------------------------------------------
+
 # Model for input validation
 login_model = api.model('Login', {
     'email': fields.String(required=True, description='User email'),
     'password': fields.String(required=True, description='User password')
 })
 
+#----------------------------------------------login endpoint------------------------------------------------
+
 @api.route('/login')
 class Login(Resource):
+
+#----------------------------------------------post method to log in properly (return an access token)------------------------------------------------
     @api.expect(login_model)
     def post(self):
         """Authenticate user and return a JWT token"""
