@@ -77,7 +77,7 @@ class ReviewResource(Resource):
         else:
             return {'error': 'Review not found'}, 404
 
-    @api.expect(review_model, validate=True)
+    @api.expect(review_model, validate=False)
     @api.response(200, 'Review updated successfully')
     @api.response(404, 'Review not found')
     @api.response(400, 'Invalid input data')
@@ -120,10 +120,8 @@ class ReviewResource(Resource):
         current_user = get_jwt_identity()
         if not review:
             return {'error': 'Review not found'}, 404
-        if review.user_id != current_user['id']:
+        if review.user_id != current_user['id'] and not current_user.get('is_admin'):
             return {'error': 'Unauthorized action'}, 403
-        if not current_user.get('is_admin'):
-            return {'error': 'Admin privileges required'}, 403
         facade.delete_review(review_id)
         return {'message': 'Review deleted successfully'}, 200
 

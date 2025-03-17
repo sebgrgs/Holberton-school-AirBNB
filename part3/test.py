@@ -84,8 +84,7 @@ class TestHBnBAPI(unittest.TestCase):
                 "last_name": "User"
             },
             headers=headers)
-        
-        print('User OK')
+
         """self.assertEqual(response.status_code, 201)"""  # API returns 200 for successful user creation
         response_data = json.loads(response.data)
         self.assertTrue('id' in response_data)
@@ -102,7 +101,6 @@ class TestHBnBAPI(unittest.TestCase):
                 "last_name": "User"
             },
             headers=headers)
-        print ('oUser OK')
         """self.assertEqual(response.status_code, 200)"""
         response_data = json.loads(response.data)
         return response_data['id']
@@ -113,7 +111,6 @@ class TestHBnBAPI(unittest.TestCase):
             "email": self.test_email,
             "password": self.test_password
         })
-        print('Login OK')
         """self.assertEqual(response.status_code, 200)"""
         response_data = json.loads(response.data)
         return response_data['access_token']
@@ -143,16 +140,10 @@ class TestHBnBAPI(unittest.TestCase):
             },
             headers=headers)
         
-        print('Place OK')
-        print(f"Place response status: {response.status_code}")
-        print(f"Place response data: {response.data}")
-        
         # Make sure we got a successful response
         self.assertEqual(response.status_code, 201)
         
         response_data = json.loads(response.data)
-        # Debug print
-        print(f"Parsed response data: {response_data}")
         
         # Check if response contains the expected data
         self.assertIn('id', response_data, 'Response does not contain id field')
@@ -168,7 +159,6 @@ class TestHBnBAPI(unittest.TestCase):
             },
             headers=headers)
         
-        print('Amenity OK')
         """self.assertEqual(response.status_code, 201)"""
         response_data = json.loads(response.data)
         return response_data['id']
@@ -189,7 +179,6 @@ class TestHBnBAPI(unittest.TestCase):
             },
             headers=headers)
         
-        print('Review OK')
         """self.assertEqual(response.status_code, 201)"""
         other_place_id = json.loads(response.data)['id']
         
@@ -323,7 +312,7 @@ class TestHBnBAPI(unittest.TestCase):
                 "email": "not-an-email"
             },
             headers=headers)
-        
+        print(response.data)
         self.assertEqual(response.status_code, 400)
     
     
@@ -369,12 +358,12 @@ class TestHBnBAPI(unittest.TestCase):
     def test_update_amenity(self):
         """Test updating an amenity (admin only)."""
         headers = {'Authorization': f'Bearer {self.admin_token}'}
-        new_name = f"Updated Amenity {uuid.uuid4()}"
-        response = self.app.put(f'/api/v1/amenities/{self.amenity_id}', 
-            json={
-                'name': new_name
-            },
-            headers=headers)
+        new_name = f"Updated Amenity {str(uuid.uuid4())[:8]}"  # Shorter name using only first 8 chars
+        response = self.app.put(
+            f'/api/v1/amenities/{self.amenity_id}',
+            json={'name': new_name},
+            headers=headers
+        )
         
         self.assertEqual(response.status_code, 200)
     

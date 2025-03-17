@@ -123,46 +123,69 @@ class PlaceResource(Resource):
                 },
                 'amenities': amenities
             }, 200
-
-    @api.expect(place_model, validate=True)
-    @api.response(200, 'Place updated successfully')
+    
+    @api.response(204, 'Place deleted successfully')
+    @api.response(403, 'admin privileges required')
     @api.response(404, 'Place not found')
     @api.response(400, 'Invalid input data')
     @jwt_required()
-    def put(self, place_id):
-        """Update a place's information"""
-        place_data = api.payload
+    def delete(self, place_id):
+        """Delete a place"""
         current_user = get_jwt_identity()
         place = facade.get_place(place_id)
+        current_user = get_jwt_identity()
+        if not place:
+            return {'error': 'Place not found'}, 404
+        if place.owner_id != current_user['id'] and not current_user.get('is_admin'):
+            return {'error': 'Unauthorized action'}, 403
+        facade.delete_place(place_id)
+        return {'message': 'Place deleted successfully'}, 204
+
+    @api.expect(place_model, validate=False)
+    @api.response(200, 'Place updated successfully')
+    @api.response(404, 'Place not found')
+    @api.response(400, 'Invalid input data')
+    @api.response(403, 'Unauthorized action')
+    @jwt_required()
+    def put(self, place_id):
+        """Update a place's information"""
+        current_user = get_jwt_identity()
+        place_data = api.payload
+        
+        # First check if place exists
+        place = facade.get_place(place_id)
+        if not place:
+            return {'error': 'Place not found'}, 404
+
+        # Check authorization
+        if not current_user.get('is_admin') and place.owner_id != current_user.get('id'):
+            return {'error': 'Unauthorized action'}, 403
 
         try:
-            place_title = facade.get_place_by_title(place_data['title'])
-            place = facade.get_place(place_id)
-            if not place:
-                return {'error': 'Place not found'}, 404
-            
-            if not user:
-                return {'error': 'Owner not found'}, 404
-            
-            if place_data['owner_id'] != current_user['id'] and current_user.get('is_admin') is False:
-                return {'error': 'Unauthorized action'}, 403
-            
-            if place_title and place_title.id != place_id:
-                return {'error': 'Place with the same title already exists'}, 400
-            user = facade.get_user(place_data['owner_id'])
+            # Only check title if it's being updated
+            if 'title' in place_data:
+                place_title = facade.get_place_by_title(place_data['title'])
+                if place_title and place_title.id != place_id:
+                    return {'error': 'Place with the same title already exists'}, 400
 
+            # Only check owner_id if it's being updated
+            if 'owner_id' in place_data:
+                user = facade.get_user(place_data['owner_id'])
+                if not user:
+                    return {'error': 'Owner not found'}, 404
 
             updated_place = facade.update_place(place_id, place_data)
             return {
-                    'id': str(updated_place.id),
-                    'title': updated_place.title,
-                    'description': updated_place.description,
-                    'price': updated_place.price,
-                    'latitude': updated_place.latitude,
-                    'longitude': updated_place.longitude,
-                    'owner_id': updated_place.owner_id,
-                    'amenities': updated_place.amenities
-                }, 200
+                'id': str(updated_place.id),
+                'title': updated_place.title,
+                'description': updated_place.description,
+                'price': updated_place.price,
+                'latitude': updated_place.latitude,
+                'longitude': updated_place.longitude,
+                'owner_id': updated_place.owner_id,
+                'amenities': [str(a) for a in updated_place.amenities]
+            }, 200
+
         except ValueError as e:
             return {'error': str(e)}, 400
 
@@ -184,22 +207,3 @@ class PlaceResource(Resource):
             else:
                 return {'error': 'Place not found'}, 404
 
-    @api.expect(place_model, validate=True)
-    @api.response(200, 'Place deleted successfully')
-    @api.response(403, 'admin privileges required')
-    @api.response(404, 'Place not found')
-    @api.response(400, 'Invalid input data')
-    @jwt_required()
-    def delete(self, place_id):
-        """Delete a place"""
-        current_user = get_jwt_identity()
-        place = facade.get_place(place_id)
-        current_user = get_jwt_identity()
-        if not place:
-            return {'error': 'Place not found'}, 404
-        if place.owner_id != current_user['id']:
-            return {'error': 'Unauthorized action'}, 403
-        if not current_user.get('is_admin'):
-            return {'error': 'Admin privileges required'}, 403
-        facade.delete_place(place_id)
-        return {'message': 'Place deleted successfully'}, 200

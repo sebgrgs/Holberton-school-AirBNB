@@ -21,5 +21,5 @@ class Amenity(BaseModel):
         if not value:
             raise ValueError("Name cannot be empty")
         if len(value) > 50:
-            raise ValueError("Name cannot be longer than 50 characters")
+            raise ValueError(f"Name length ({len(value)}) exceeds maximum of 50 characters")
         self._name = value
