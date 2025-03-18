@@ -151,6 +151,11 @@ class PlaceReviewList(Resource):
 
 #----------------------------------------------get all reviews for a place method------------------------------------------------
 
+#WARNING: DO NOT DELETE THIS METHOD, this is NOT AN ERROR
+
+# This method is implemented in both place and review, it's an add that I found useful to have in both reviews and places
+# It's a common operation to get all reviews for a place.
+
     @api.response(200, 'List of reviews for the place retrieved successfully')
     @api.response(404, 'Place not found')
     def get(self, place_id):
