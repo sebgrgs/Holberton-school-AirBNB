@@ -26,7 +26,7 @@ class AdminUserCreate(Resource):
 #----------------------------------------------post method------------------------------------------------
 
     @api.expect(user_model, validate=True)
-    @api.response(200, 'User successfully created')
+    @api.response(201, 'User successfully created')
     @api.response(400, 'Email already registered')
     @api.response(403, 'Admin privileges required')
     @jwt_required()
@@ -51,7 +51,7 @@ class AdminUserCreate(Resource):
                 'last_name': new_user.last_name,
                 'email': new_user.email,
                 'password': new_user.password
-            }, 200
+            }, 201
         except ValueError as e:
             return {'error': str(e)}, 400
     

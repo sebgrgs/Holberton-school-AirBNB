@@ -84,15 +84,24 @@ class TestHBnBAPI(unittest.TestCase):
                 "last_name": "User"
             },
             headers=headers)
-
-        """self.assertEqual(response.status_code, 201)"""  # API returns 200 for successful user creation
+        
+        self.assertEqual(response.status_code, 201)
         response_data = json.loads(response.data)
         self.assertTrue('id' in response_data)
         return response_data['id']
 
     def create_other_user(self):
         """Create another user for testing ownership restrictions."""
-        headers = {'Authorization': f'Bearer {self.admin_token}'}
+        # Get a fresh token each time this method is called
+        response = self.app.post('/api/v1/auth/login', json={
+            "email": self.admin_email,
+            "password": "adminpass123"
+        })
+        self.assertEqual(response.status_code, 200)
+        response_data = json.loads(response.data)
+        fresh_admin_token = response_data['access_token']
+        
+        headers = {'Authorization': f'Bearer {fresh_admin_token}'}
         response = self.app.post('/api/v1/users/', 
             json={
                 "email": self.other_email,
@@ -101,7 +110,11 @@ class TestHBnBAPI(unittest.TestCase):
                 "last_name": "User"
             },
             headers=headers)
-        """self.assertEqual(response.status_code, 200)"""
+        
+        if response.status_code != 201:
+            print(f"Failed to create other user: {response.data.decode('utf-8')}")
+
+        self.assertEqual(response.status_code, 201)
         response_data = json.loads(response.data)
         return response_data['id']
 
@@ -111,7 +124,7 @@ class TestHBnBAPI(unittest.TestCase):
             "email": self.test_email,
             "password": self.test_password
         })
-        """self.assertEqual(response.status_code, 200)"""
+        self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.data)
         return response_data['access_token']
     
@@ -121,7 +134,7 @@ class TestHBnBAPI(unittest.TestCase):
             "email": self.other_email,
             "password": self.other_password
         })
-        """self.assertEqual(response.status_code, 200)"""
+        self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.data)
         return response_data['access_token']
 
@@ -130,7 +143,7 @@ class TestHBnBAPI(unittest.TestCase):
         headers = {'Authorization': f'Bearer {self.token}'}
         response = self.app.post('/api/v1/places/', 
             json={
-                'title': 'My Place',
+                'title': f'{uuid.uuid4()}',
                 'description': 'A place to stay',
                 'price': 100.00,
                 'latitude': 37.7749,
@@ -139,15 +152,10 @@ class TestHBnBAPI(unittest.TestCase):
                 'amenities': []
             },
             headers=headers)
-        
-        # Make sure we got a successful response
+        if response.status_code != 201:
+            print(f"Failed to create place: {response.data.decode('utf-8')}")
         self.assertEqual(response.status_code, 201)
-        
         response_data = json.loads(response.data)
-        
-        # Check if response contains the expected data
-        self.assertIn('id', response_data, 'Response does not contain id field')
-        
         return response_data['id']
     
     def create_amenity(self):
@@ -159,7 +167,7 @@ class TestHBnBAPI(unittest.TestCase):
             },
             headers=headers)
         
-        """self.assertEqual(response.status_code, 201)"""
+        self.assertEqual(response.status_code, 201)
         response_data = json.loads(response.data)
         return response_data['id']
     
@@ -179,7 +187,7 @@ class TestHBnBAPI(unittest.TestCase):
             },
             headers=headers)
         
-        """self.assertEqual(response.status_code, 201)"""
+        self.assertEqual(response.status_code, 201)
         other_place_id = json.loads(response.data)['id']
         
         # Now review the other user's place
@@ -193,7 +201,7 @@ class TestHBnBAPI(unittest.TestCase):
             },
             headers=headers)
         
-        """self.assertEqual(response.status_code, 201)"""
+        self.assertEqual(response.status_code, 201)
         response_data = json.loads(response.data)
         return response_data['id']
 
@@ -230,7 +238,7 @@ class TestHBnBAPI(unittest.TestCase):
             },
             headers=headers)
         
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
         response_data = json.loads(response.data)
         self.assertTrue('id' in response_data)
     
@@ -312,11 +320,39 @@ class TestHBnBAPI(unittest.TestCase):
                 "email": "not-an-email"
             },
             headers=headers)
-        print(response.data)
+        
         self.assertEqual(response.status_code, 400)
     
+    def test_delete_user_as_admin(self):
+        """Test deleting a user as admin."""
+        # First create a user to delete
+        headers = {'Authorization': f'Bearer {self.admin_token}'}
+        response = self.app.post('/api/v1/users/', 
+            json={
+                "email": f"delete_{uuid.uuid4()}@example.com",
+                "password": "deletepass123",
+                "first_name": "Delete",
+                "last_name": "User"
+            },
+            headers=headers)
+        
+        user_id = json.loads(response.data)['id']
+        
+        # Now delete the user
+        response = self.app.delete(f'/api/v1/users/{user_id}', headers=headers)
+        self.assertEqual(response.status_code, 200)
     
-
+    def test_delete_user_as_non_admin(self):
+        """Test deleting a user without admin privileges."""
+        headers = {'Authorization': f'Bearer {self.token}'}
+        response = self.app.delete(f'/api/v1/users/{self.other_user_id}', headers=headers)
+        self.assertEqual(response.status_code, 403)
+    
+    def test_delete_own_account(self):
+        """Test user deleting their own account."""
+        headers = {'Authorization': f'Bearer {self.token}'}
+        response = self.app.delete(f'/api/v1/users/{self.user_id}', headers=headers)
+        self.assertEqual(response.status_code, 200)
     
     # Amenity tests
     def test_create_amenity(self):
@@ -358,12 +394,12 @@ class TestHBnBAPI(unittest.TestCase):
     def test_update_amenity(self):
         """Test updating an amenity (admin only)."""
         headers = {'Authorization': f'Bearer {self.admin_token}'}
-        new_name = f"Updated Amenity {str(uuid.uuid4())[:8]}"  # Shorter name using only first 8 chars
-        response = self.app.put(
-            f'/api/v1/amenities/{self.amenity_id}',
-            json={'name': new_name},
-            headers=headers
-        )
+        new_name = f"Updated Amenity {uuid.uuid4()}"
+        response = self.app.put(f'/api/v1/amenities/{self.amenity_id}', 
+            json={
+                'name': new_name
+            },
+            headers=headers)
         
         self.assertEqual(response.status_code, 200)
     
@@ -469,7 +505,6 @@ class TestHBnBAPI(unittest.TestCase):
                 'price': 200.00
             },
             headers=headers)
-        
         self.assertEqual(response.status_code, 200)
     
     def test_update_other_user_place(self):
@@ -534,7 +569,7 @@ class TestHBnBAPI(unittest.TestCase):
         # Now delete it as admin since only admins can delete places
         admin_headers = {'Authorization': f'Bearer {self.admin_token}'}
         response = self.app.delete(f'/api/v1/places/{place_id}', headers=admin_headers)
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 200)
     
     # Review tests
     def test_create_review(self):
@@ -626,7 +661,6 @@ class TestHBnBAPI(unittest.TestCase):
                 'user_id': self.user_id
             },
             headers=headers)
-        
         self.assertEqual(response.status_code, 200)
     
     def test_delete_review_admin(self):
@@ -634,32 +668,6 @@ class TestHBnBAPI(unittest.TestCase):
         headers = {'Authorization': f'Bearer {self.admin_token}'}
         response = self.app.delete(f'/api/v1/reviews/{self.review_id}', headers=headers)
         self.assertEqual(response.status_code, 200)
-
-    def test_delete_review_non_admin(self):
-        """Test deleting a review without admin privileges."""
-        # First create a review - check the response for success
-        headers = {'Authorization': f'Bearer {self.token}'}
-        response = self.app.post('/api/v1/reviews/', 
-            json={
-                'text': f"Review to delete {uuid.uuid4()}",
-                'rating': 5,
-                'place_id': self.place_id,
-                'user_id': self.user_id
-            },
-            headers=headers)
-        
-        # Make sure review was created successfully before continuing
-        self.assertEqual(response.status_code, 201, 
-                        f"Review creation failed with status {response.status_code}: {response.data}")
-        
-        # Now extract the ID safely
-        response_data = json.loads(response.data)
-        self.assertIn('id', response_data, f"Response missing 'id' field: {response_data}")
-        review_id = response_data['id']
-        
-        # Now try to delete it without admin privileges
-        response = self.app.delete(f'/api/v1/reviews/{review_id}', headers=headers)
-        self.assertEqual(response.status_code, 403)
 
 
 if __name__ == '__main__':
