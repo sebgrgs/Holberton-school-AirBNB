@@ -60,8 +60,8 @@ class PlaceList(Resource):
         place_data = api.payload
         try:
             place_title = facade.get_place_by_title(place_data['title'])
-            #if place_title:
-                #return {'error': 'Place with the same title already exists'}, 400
+            if place_title:
+                return {'error': 'Place with the same title already exists'}, 400
             user = facade.get_user(place_data['owner_id'])
             if place_data['owner_id'] != current_user['id']:
                 return {'error': 'You can only create places for your own account'}, 403
