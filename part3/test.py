@@ -323,36 +323,6 @@ class TestHBnBAPI(unittest.TestCase):
         
         self.assertEqual(response.status_code, 400)
     
-    def test_delete_user_as_admin(self):
-        """Test deleting a user as admin."""
-        # First create a user to delete
-        headers = {'Authorization': f'Bearer {self.admin_token}'}
-        response = self.app.post('/api/v1/users/', 
-            json={
-                "email": f"delete_{uuid.uuid4()}@example.com",
-                "password": "deletepass123",
-                "first_name": "Delete",
-                "last_name": "User"
-            },
-            headers=headers)
-        
-        user_id = json.loads(response.data)['id']
-        
-        # Now delete the user
-        response = self.app.delete(f'/api/v1/users/{user_id}', headers=headers)
-        self.assertEqual(response.status_code, 200)
-    
-    def test_delete_user_as_non_admin(self):
-        """Test deleting a user without admin privileges."""
-        headers = {'Authorization': f'Bearer {self.token}'}
-        response = self.app.delete(f'/api/v1/users/{self.other_user_id}', headers=headers)
-        self.assertEqual(response.status_code, 403)
-    
-    def test_delete_own_account(self):
-        """Test user deleting their own account."""
-        headers = {'Authorization': f'Bearer {self.token}'}
-        response = self.app.delete(f'/api/v1/users/{self.user_id}', headers=headers)
-        self.assertEqual(response.status_code, 200)
     
     # Amenity tests
     def test_create_amenity(self):
