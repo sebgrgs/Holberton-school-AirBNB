@@ -40,9 +40,6 @@ Part 3 builds upon the REST API foundation established in Part 2, implementing a
 - Role-based access control (admin vs. regular users)
 - Protected routes requiring authentication
 
-### Configuration
-- `config.py`: Application configuration with database connection settings
-
 ### Testing
 - `test_sql.py`: Tests for SQLAlchemy configuration and repository implementation
 - `test.py`: Test for the API endpoints
@@ -58,6 +55,48 @@ The application uses the following core models:
 ## Database ER Diagram
 
 ![AirBnB Database ER Diagram](/part3/database/ERdiagramHbnb.png)
+
+### Tables and Relationships
+
+#### User Table
+- Stores user account information and authentication details
+- Primary key: id (UUID)
+- Unique constraint: email
+- Password is stored as a bcrypt hash for security
+- is_admin flag determines administrative privileges
+
+#### Place Table
+- Stores rental property listings
+- Primary key: id (UUID)
+- Foreign key: owner_id references User.id
+- Geographic coordinates stored as latitude/longitude
+- Price stored as float for monetary values
+
+#### Review Table
+- Stores user reviews for properties
+- Primary key: id (UUID)
+- Foreign keys:
+  - user_id references User.id (the reviewer)
+  - place_id references Place.id (the reviewed property)
+- Rating constrained between 1-5
+
+#### Amenity Table
+- Stores available property features
+- Primary key: id (UUID)
+- Unique constraint: name
+
+#### Place_Amenity (Junction Table)
+- Implements many-to-many relationship between Place and Amenity
+- Composite primary key: (place_id, amenity_id)
+- Foreign keys:
+  - place_id references Place.id
+  - amenity_id references Amenity.id
+
+#### Key Relationships
+- One User can own many Places (one-to-many)
+- One User can write many Reviews (one-to-many)
+- One Place can have many Reviews (one-to-many)
+- Many Places can have many Amenities (many-to-many via Place_Amenity)
 
 ## Getting Started
 
@@ -85,6 +124,18 @@ python -m unittest test_sql.py
 ```bash
 python -m unittest test.py
 ```
+
+## Technologies Used
+
+- **Flask**: Web framework for building the API
+- **Flask-RESTx**: Extension for building REST APIs with Swagger documentation
+- **SQLAlchemy/Flask-SQLAlchemy**: ORM for database access and management
+- **Flask-Migrate**: Database migration management
+- **Flask-JWT-Extended**: Authentication with JSON Web Tokens
+- **Flask-Bcrypt**: Password hashing and security
+- **Python-dotenv**: Environment variable management
+- **SQLite/MySQL**: Database engines
+- **Unit Testing**: Python's unittest framework for testing
 
 ## Authors
 - [Mathieu ZUCALLI](github.com/matzuc2)
