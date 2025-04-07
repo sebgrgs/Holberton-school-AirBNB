@@ -1,0 +1,51 @@
+erDiagram
+    User {
+        char(36) id PK
+        varchar(255) first_name
+        varchar(255) last_name
+        varchar(255) email UK
+        varchar(255) password
+        boolean is_admin
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    Place {
+        char(36) id PK
+        varchar(255) title
+        text description
+        float price
+        float latitude
+        float longitude
+        char(36) owner_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    Review {
+        char(36) id PK
+        text text
+        int rating
+        char(36) user_id FK
+        char(36) place_id FK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    Amenity {
+        char(36) id PK
+        varchar(255) name UK
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    Place_Amenity {
+        char(36) place_id PK, FK
+        char(36) amenity_id PK, FK
+    }
+
+    User ||--o{ Place : owns
+    User ||--o{ Review : writes
+    Place ||--o{ Review : has
+    Place ||--o{ Place_Amenity : has
+    Amenity ||--o{ Place_Amenity : included_in
