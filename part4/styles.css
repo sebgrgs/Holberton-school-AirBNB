@@ -31,6 +31,194 @@ main {
     padding: 2rem;
 }
 
+.place-card {
+    margin: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background-color: #fff;
+    transition: transform 0.3s ease;
+}
+
+.place-card:hover {
+    transform: translateY(-5px);
+}
+
+.place-card h3 {
+    margin-top: 0;
+    color: #333;
+}
+
+.place-details {
+    margin: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.place-info {
+    padding: 15px;
+}
+
+.place-info h1 {
+    margin-bottom: 20px;
+}
+
+.place-info h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+#amenities-list {
+    list-style-type: none;
+    padding-left: 15px;
+}
+
+#amenities-list li {
+    margin-bottom: 5px;
+    position: relative;
+    padding-left: 20px;
+}
+
+#amenities-list li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #4CAF50;
+}
+
+.button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-top: 20px;
+    margin-left: 20px;
+}
+
+.button:hover {
+    background-color: #45a049;
+}
+
+.details-button {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.details-button:hover {
+    background-color: #45a049;
+}
+
+.review-card {
+    margin: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}
+
+.review-card .rating {
+    font-weight: bold;
+    color: #f8c102;
+    margin-bottom: 10px;
+}
+
+.review-card .reviewer {
+    font-style: italic;
+    color: #666;
+    text-align: right;
+    margin-top: 10px;
+}
+
+.add-review {
+    margin: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #f5f5f5;
+}
+
+.form label {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.form textarea {
+    width: 100%;
+    min-height: 100px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.form select {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.form button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.form button:hover {
+    background-color: #45a049;
+}
+
+#login-form {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    background-color: #f9f9f9;
+}
+
+#login-form label {
+    display: block;
+    margin-top: 10px;
+}
+
+#login-form input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+#login-form button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#login-form button:hover {
+    background-color: #45a049;
+}
+
 .error-message {
     color: #d93025;
     background-color: #fce8e6;
