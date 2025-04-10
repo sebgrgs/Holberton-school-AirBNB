@@ -262,90 +262,49 @@ async function fetchPlaceDetails(token, placeId) {
 }
 
 function displayPlaceDetails(place) {
-    // Get all the elements we need to update
-    const placeTitle = document.getElementById('place-title');
-    const hostName = document.getElementById('host-name');
-    const placePrice = document.getElementById('place-price');
-    const placeDescription = document.getElementById('place-description');
+    const placeDetails = document.getElementById('place-details');
     const amenitiesList = document.getElementById('amenities-list');
-    const reviewList = document.getElementById('review-list');
+    if (!placeDetails) return;
     
-    // If no place details to display
-    if (!place) {
-        placeTitle.textContent = 'Place not found';
-        hostName.textContent = 'N/A';
-        placePrice.textContent = '0';
-        placeDescription.textContent = 'No description available';
-        amenitiesList.innerHTML = '<li>No amenities available</li>';
-        reviewList.innerHTML = '<p>No reviews available</p>';
+    if (!amenitiesList) {
+        console.error('Amenities list element not found');
         return;
     }
-    
-    // Update the place details
-    placeTitle.textContent = place.title || 'Unnamed Place';
-    
-    // Update host info if available
-    if (place.user) {
-        hostName.textContent = place.user.first_name ? 
-            `${place.user.first_name} ${place.user.last_name || ''}` : 
-            place.user.email || 'Anonymous';
-    } else {
-        hostName.textContent = 'Anonymous';
-    }
-    
-    // Update price
-    placePrice.textContent = place.price_by_night || place.price || '0';
-    
-    // Update description
-    placeDescription.textContent = place.description || 'No description available';
-    
-    // Update amenities
-    if (place.amenities && place.amenities.length > 0) {
-        amenitiesList.innerHTML = '';
-        place.amenities.forEach(amenity => {
-            const li = document.createElement('li');
-            li.innerHTML = `<i class="fas fa-check"></i> ${amenity.name}`;
-            amenitiesList.appendChild(li);
+    // Clear the current content
+    placeDetails.innerHTML = '';
+    amenitiesList.innerHTML = '';    
+    // Create elements for place details
+    const amenities = place.amenities || [];
+    if (amenities.length > 0) {
+        amenities.forEach(amenity => {
+            const amenityItem = document.createElement('li');
+            amenityItem.textContent = amenity.name || 'Unnamed Amenity';
+            amenitiesList.appendChild(amenityItem);
         });
     } else {
-        amenitiesList.innerHTML = '<li>No amenities available</li>';
+        const noAmenitiesItem = document.createElement('li');
+        noAmenitiesItem.textContent = 'No amenities available.';
+        amenitiesList.appendChild(noAmenitiesItem);
     }
+
+    const title = document.createElement('h2');
+    title.textContent = place.title || 'Unnamed Place';
     
-    // Update reviews
-    if (place.reviews && place.reviews.length > 0) {
-        reviewList.innerHTML = '';
-        place.reviews.forEach(review => {
-            const reviewDiv = document.createElement('div');
-            reviewDiv.className = 'review';
-            
-            // Format date if available
-            let dateDisplay = 'Unknown date';
-            if (review.created_at) {
-                const date = new Date(review.created_at);
-                dateDisplay = date.toLocaleDateString();
-            }
-            
-            // Get user name if available
-            const userName = review.user ? 
-                (review.user.first_name ? `${review.user.first_name} ${review.user.last_name || ''}` : review.user.email) : 
-                'Anonymous';
-            
-            reviewDiv.innerHTML = `
-                <div class="review-header">
-                    <span class="user-name">${userName}</span>
-                    <span class="review-date">${dateDisplay}</span>
-                    <div class="rating">
-                        ${getRatingStars(review.rating || 0)}
-                    </div>
-                </div>
-                <p class="review-text">${review.text || 'No review text provided'}</p>
-            `;
-            
-            reviewList.appendChild(reviewDiv);
-        });
-    } else {
-        reviewList.innerHTML = '<p>No reviews yet. Be the first to review!</p>';
-    }
+    const description = document.createElement('p');
+    description.textContent = place.description || 'No description available.';
+    
+    const price = document.createElement('p');
+    price.textContent = `$${place.price || 0} per night`;
+    
+    const rating = document.createElement('div');
+    rating.innerHTML = getRatingStars(place.rating || 0);
+    
+    placeDetails.appendChild(title);
+    placeDetails.appendChild(description);
+    placeDetails.appendChild(price);
+    placeDetails.appendChild(rating);
+    placeDetails.appendChild(amenitiesList);
+    
 }
 
 // Helper function to create star rating display
