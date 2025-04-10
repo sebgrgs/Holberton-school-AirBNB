@@ -217,17 +217,15 @@ class PlaceResource(Resource):
         @api.response(404, 'Place not found')
         def get(self, place_id):
             """Get all reviews for a specific place"""
-            reviews = facade.get_reviews_by_place(place_id)
-            review_exists = facade.get_place(place_id)
-            if reviews:
-                return [{
-                    'id': review.id,
-                    'text': review.text,
-                    'rating': review.rating,
-                    'user_id': review.user_id,
-                    'place_id': review.place_id
-                } for review in reviews], 200
-            elif not review_exists:
+            place = facade.get_place(place_id)
+            if not place:
                 return {'error': 'Place not found'}, 404
-            else:
-                return {'error': 'No reviews found for this place'}, 404
+
+            reviews = facade.get_reviews_by_place(place_id)
+            return [{
+                'id': review.id,
+                'text': review.text,
+                'rating': review.rating,
+                'user_id': review.user_id,
+                'place_id': review.place_id
+            } for review in reviews], 200
