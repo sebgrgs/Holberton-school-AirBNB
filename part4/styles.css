@@ -63,7 +63,10 @@ main {
 }
 
 .place-info h1 {
-    margin-bottom: 20px;
+    font-size: 28px;
+    margin: 0 0 20px 0;
+    color: #333;
+    font-weight: bold;
 }
 
 .place-info h3 {
