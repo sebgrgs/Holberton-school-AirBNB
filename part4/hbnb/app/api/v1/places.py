@@ -75,8 +75,7 @@ class PlaceList(Resource):
                 'price': new_place.price,
                 'latitude': new_place.latitude,
                 'longitude': new_place.longitude,
-                'owner_id': new_place.owner_id,
-                'amenities': new_place.amenities
+                'owner_id': new_place.owner_id
             }, 201
 
         except ValueError as e:
@@ -117,14 +116,10 @@ class PlaceResource(Resource):
         if not owner:
             return {'error': 'Owner not found'}, 404
 
-        amenities = []
-        for amenity_id in place.amenities:
-            amenity = facade.get_amenity(amenity_id)
-            if amenity:
-                amenities.append({
-                    'id': str(amenity.id),
-                    'name': amenity.name
-                })
+        amenities = [{
+            'id': str(amenity.id),
+            'name': amenity.name
+        } for amenity in place.amenities]
 
         return {
                 'id': place.id,

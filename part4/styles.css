@@ -85,6 +85,10 @@ main {
     padding-left: 20px;
 }
 
+#amenities-list li.no-amenities:before {
+    content: none;
+}
+
 #amenities-list li:before {
     content: "✓";
     position: absolute;

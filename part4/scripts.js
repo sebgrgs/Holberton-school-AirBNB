@@ -92,13 +92,20 @@ function checkAuthentication() {
     const token = getCookie('token');
     const loginLink = document.getElementById('login-link');
     const addReviewSection = document.getElementById('add-review');
+    
+    // Get placeId from URL if we're on a place details page
+    const placeId = getPlaceIdFromURL();
+    
     if (addReviewSection) {
         if (!token) {
             addReviewSection.style.display = 'none';
         } else {
             addReviewSection.style.display = 'block';
-        // Store the token for later use
-            fetchPlaceDetails(token, placeId);
+            
+            // Only fetch place details if we have both a token and a placeId
+            if (placeId) {
+                fetchPlaceDetails(token, placeId);
+            }
         }
     }
 
@@ -118,8 +125,11 @@ function checkAuthentication() {
         }
     }
     
-    // Always fetch places regardless of loginLink existence
-    fetchPlaces(token);
+    // Check if we're on the places listing page before fetching places
+    const placesList = document.getElementById('places-list');
+    if (placesList) {
+        fetchPlaces(token);
+    }
 }
 
 function getCookie(name) {
@@ -139,7 +149,7 @@ async function fetchPlaces(token) {
         const response = await fetch('http://localhost:5000/api/v1/places/', {
             method: 'GET',
             headers: {
-                'Authorization': token ? `Token ${token}` : '',
+                'Authorization': token ? `Bearer ${token}` : '',
                 'Content-Type': 'application/json'
             }
         });
@@ -149,10 +159,10 @@ async function fetchPlaces(token) {
             displayPlaces(data); // Display all places initially
             setupPriceFilter(); // Set up the price filter
         } else {
-            console.error('Failed to fetch places:', response.statusText);
+            display.error('Failed to fetch places:', response.statusText);
         }
     } catch (error) {
-        console.error('Error fetching places:', error);
+        display.error('Error fetching places:', error);
     }
 }
 
@@ -236,8 +246,8 @@ async function fetchPlaceDetails(token, placeId) {
         const response = await fetch(`http://localhost:5000/api/v1/places/${placeId}`, {
             method: 'GET',
             headers: {
-                'Authorization': token ? `Token ${token}` : '',
-                'Content-Type': 'application/json'
+    'Authorization': token ? `Bearer ${token}` : '',
+    'Content-Type': 'application/json'
             }
         });
         if (response.ok) {
@@ -249,4 +259,104 @@ async function fetchPlaceDetails(token, placeId) {
     } catch (error) {
         console.error('Error fetching place details:', error);
     }
+}
+
+function displayPlaceDetails(place) {
+    // Get all the elements we need to update
+    const placeTitle = document.getElementById('place-title');
+    const hostName = document.getElementById('host-name');
+    const placePrice = document.getElementById('place-price');
+    const placeDescription = document.getElementById('place-description');
+    const amenitiesList = document.getElementById('amenities-list');
+    const reviewList = document.getElementById('review-list');
+    
+    // If no place details to display
+    if (!place) {
+        placeTitle.textContent = 'Place not found';
+        hostName.textContent = 'N/A';
+        placePrice.textContent = '0';
+        placeDescription.textContent = 'No description available';
+        amenitiesList.innerHTML = '<li>No amenities available</li>';
+        reviewList.innerHTML = '<p>No reviews available</p>';
+        return;
+    }
+    
+    // Update the place details
+    placeTitle.textContent = place.title || 'Unnamed Place';
+    
+    // Update host info if available
+    if (place.user) {
+        hostName.textContent = place.user.first_name ? 
+            `${place.user.first_name} ${place.user.last_name || ''}` : 
+            place.user.email || 'Anonymous';
+    } else {
+        hostName.textContent = 'Anonymous';
+    }
+    
+    // Update price
+    placePrice.textContent = place.price_by_night || place.price || '0';
+    
+    // Update description
+    placeDescription.textContent = place.description || 'No description available';
+    
+    // Update amenities
+    if (place.amenities && place.amenities.length > 0) {
+        amenitiesList.innerHTML = '';
+        place.amenities.forEach(amenity => {
+            const li = document.createElement('li');
+            li.innerHTML = `<i class="fas fa-check"></i> ${amenity.name}`;
+            amenitiesList.appendChild(li);
+        });
+    } else {
+        amenitiesList.innerHTML = '<li>No amenities available</li>';
+    }
+    
+    // Update reviews
+    if (place.reviews && place.reviews.length > 0) {
+        reviewList.innerHTML = '';
+        place.reviews.forEach(review => {
+            const reviewDiv = document.createElement('div');
+            reviewDiv.className = 'review';
+            
+            // Format date if available
+            let dateDisplay = 'Unknown date';
+            if (review.created_at) {
+                const date = new Date(review.created_at);
+                dateDisplay = date.toLocaleDateString();
+            }
+            
+            // Get user name if available
+            const userName = review.user ? 
+                (review.user.first_name ? `${review.user.first_name} ${review.user.last_name || ''}` : review.user.email) : 
+                'Anonymous';
+            
+            reviewDiv.innerHTML = `
+                <div class="review-header">
+                    <span class="user-name">${userName}</span>
+                    <span class="review-date">${dateDisplay}</span>
+                    <div class="rating">
+                        ${getRatingStars(review.rating || 0)}
+                    </div>
+                </div>
+                <p class="review-text">${review.text || 'No review text provided'}</p>
+            `;
+            
+            reviewList.appendChild(reviewDiv);
+        });
+    } else {
+        reviewList.innerHTML = '<p>No reviews yet. Be the first to review!</p>';
+    }
+}
+
+// Helper function to create star rating display
+function getRatingStars(rating) {
+    const fullStar = '<i class="fas fa-star"></i>';
+    const emptyStar = '<i class="far fa-star"></i>';
+    
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+        stars += i <= rating ? fullStar : emptyStar;
+    }
+    
+    return stars;
 }
