@@ -1,5 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
+    const token = checkAuthentication();
+    const placeId = getPlaceIdFromURL();
     const loginForm = document.getElementById('login-form');
+    const reviewForm = document.getElementById('review-form');
     const errorMessage = document.getElementById('error-message') || createErrorElement();
 
     if (loginForm) {
@@ -16,7 +19,55 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    checkAuthentication();
+
+    if (reviewForm && token && placeId) {
+        reviewForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            
+            const reviewText = document.getElementById('review-text').value.trim();
+            const rating = parseInt(document.getElementById('review-rating').value);            
+            if (!reviewText || isNaN(rating)) {
+                alert('Please provide both review text and rating.');
+                return;
+            }
+            
+            const tokenPayload = parseJwt(token);
+            const userId = tokenPayload.sub || tokenPayload.id;
+
+            if (!userId) {
+                alert('User ID not found. Please log in again.');
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/v1/reviews', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        place_id: placeId,
+                        text: reviewText,
+                        rating: rating,
+                        user_id: userId.id
+                    })
+                });
+                
+                if (response.ok) {
+                    alert('Review submitted successfully!');
+                    document.getElementById('review-text').value = '';
+                    document.getElementById('review-rating').selectedIndex = 0;
+                    fetchPlaceReviews(token, placeId);
+                } else {
+                    const errorData = await response.json();
+                    alert(`Failed to submit review: ${errorData.error || errorData.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                alert('Error submitting review: ' + error.message);
+            }
+        });
+    }
 });
 
 async function loginUser(email, password) {
@@ -48,6 +99,8 @@ async function loginUser(email, password) {
         const expiryDate = new Date();
         expiryDate.setTime(expiryDate.getTime() + (24 * 60 * 60 * 1000));
         document.cookie = `token=${data.access_token}; path=/; expires=${expiryDate.toUTCString()}; SameSite=Strict`;
+        // Store user_id in localStorage or a cookie
+        localStorage.setItem('user_id', data.user_id);
         
         window.location.href = 'index.html';
     } else {
@@ -92,24 +145,21 @@ function checkAuthentication() {
     const token = getCookie('token');
     const loginLink = document.getElementById('login-link');
     const addReviewSection = document.getElementById('add-review');
-    
-    // Get placeId from URL if we're on a place details page
     const placeId = getPlaceIdFromURL();
     
+    // Redirect unauthenticated users to index page if on place details page
+    if (!token && document.getElementById('place-details')) {
+        window.location.href = 'index.html';
+        return null;
+    }
+    
     if (addReviewSection) {
-        if (!token) {
-            addReviewSection.style.display = 'none';
-        } else {
-            addReviewSection.style.display = 'block';
-            
-            // Only fetch place details if we have both a token and a placeId
-            if (placeId) {
-                fetchPlaceDetails(token, placeId);
-            }
+        addReviewSection.style.display = token ? 'block' : 'none';
+        if (token && placeId) {
+            fetchPlaceDetails(token, placeId);
         }
     }
-
-    // Only modify loginLink if it exists
+    
     if (loginLink) {
         if (!token) {
             loginLink.textContent = 'Login';
@@ -125,15 +175,15 @@ function checkAuthentication() {
         }
     }
     
-    // Check if we're on the places listing page before fetching places
     const placesList = document.getElementById('places-list');
     if (placesList) {
         fetchPlaces(token);
     }
+    
+    return token;
 }
 
 function getCookie(name) {
-    // Function to get a cookie value by its name
     const cookies = document.cookie.split(';');
     for (let i = 0; i < cookies.length; i++) {
         const cookie = cookies[i].trim();
@@ -155,24 +205,23 @@ async function fetchPlaces(token) {
         });
         if (response.ok) {
             const data = await response.json();
-            allPlaces = data; // Store all places in global variable
-            displayPlaces(data); // Display all places initially
-            setupPriceFilter(); // Set up the price filter
+            allPlaces = data;
+            displayPlaces(data);
+            setupPriceFilter();
         } else {
-            display.error('Failed to fetch places:', response.statusText);
+            console.error('Failed to fetch places:', response.statusText);
         }
     } catch (error) {
-        display.error('Error fetching places:', error);
+        console.error('Error fetching places:', error);
     }
 }
 
-let allPlaces = []; // Global variable to store all places
+let allPlaces = [];
 
 function setupPriceFilter() {
     const priceFilter = document.getElementById('price-filter');
     if (!priceFilter) return;
     
-    // Add event listener for the price filter
     priceFilter.addEventListener('change', function() {
         const maxPrice = this.value ? parseInt(this.value) : Infinity;
         filterPlacesByPrice(maxPrice);
@@ -182,20 +231,16 @@ function setupPriceFilter() {
 function filterPlacesByPrice(maxPrice) {
     if (!allPlaces || allPlaces.length === 0) return;
     
-    // If maxPrice is not set (All Prices selected), show all places
     if (maxPrice === Infinity) {
         displayPlaces(allPlaces);
         return;
     }
     
-    // Filter places based on the selected maximum price
     const filteredPlaces = allPlaces.filter(place => {
-        // Assuming the price is stored in place.price_by_night or place.price
         const price = place.price_by_night || place.price || 0;
         return price <= maxPrice;
     });
     
-    // Display the filtered places
     displayPlaces(filteredPlaces);
 }
 
@@ -203,21 +248,17 @@ function displayPlaces(places) {
     const placesList = document.getElementById('places-list');
     if (!placesList) return;
     
-    // Clear the current content
     placesList.innerHTML = '';
     
-    // If no places to display
     if (!places || places.length === 0) {
         placesList.innerHTML = '<p>No places match your criteria.</p>';
         return;
     }
     
-    // Iterate over the places data
     places.forEach(place => {
         const placeElement = document.createElement('div');
         placeElement.className = 'place-card';
         
-        // Use the correct property names based on your API response
         const title = place.name || place.title || 'Unnamed Place';
         const price = place.price_by_night || place.price || 0;
         const id = place.id || '1';
@@ -233,7 +274,6 @@ function displayPlaces(places) {
 }
 
 function getPlaceIdFromURL() {
-    // Extract the place ID from window.location.search
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('id');
 }
@@ -251,8 +291,6 @@ async function fetchPlaceDetails(token, placeId) {
         if (response.ok) {
             const data = await response.json();
             displayPlaceDetails(data);
-            
-            // After displaying place details, fetch and display reviews
             fetchPlaceReviews(token, placeId);
         } else {
             console.error('Failed to fetch place details:', response.statusText);
@@ -263,31 +301,26 @@ async function fetchPlaceDetails(token, placeId) {
 }
 
 function displayPlaceDetails(place) {
-    // Update place title
     const placeTitle = document.getElementById('place-title');
     if (placeTitle) {
         placeTitle.textContent = place.title || 'Unnamed Place';
     }
     
-    // Update host name
     const hostName = document.getElementById('host-name');
     if (hostName && place.owner) {
         hostName.textContent = `${place.owner.first_name} ${place.owner.last_name}`;
     }
     
-    // Update price
     const placePrice = document.getElementById('place-price');
     if (placePrice) {
         placePrice.textContent = place.price || 0;
     }
     
-    // Update description
     const placeDescription = document.getElementById('place-description');
     if (placeDescription) {
         placeDescription.textContent = place.description || 'No description available.';
     }
     
-    // Update amenities list
     const amenitiesList = document.getElementById('amenities-list');
     if (amenitiesList) {
         amenitiesList.innerHTML = '';
@@ -319,15 +352,41 @@ async function fetchPlaceReviews(token, placeId) {
         });
         
         if (response.ok) {
-            const data = await response.json();
-            displayReviews(data);
+            const reviews = await response.json();
+            
+            // Fetch user details for each review
+            const reviewsWithUserDetails = await Promise.all(reviews.map(async (review) => {
+                try {
+                    const userResponse = await fetch(`http://localhost:5000/api/v1/users/${review.user_id}`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': token ? `Bearer ${token}` : '',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    
+                    if (userResponse.ok) {
+                        const userData = await userResponse.json();
+                        // Add user details to the review object
+                        review.user = {
+                            first_name: userData.first_name,
+                            last_name: userData.last_name
+                        };
+                    }
+                } catch (error) {
+                    console.error(`Error fetching user details for review ${review.id}:`, error);
+                }
+                return review;
+            }));
+            
+            displayReviews(reviewsWithUserDetails);
         } else {
             console.error('Failed to fetch reviews:', response.statusText);
-            displayReviews([]);  // Show empty reviews
+            displayReviews([]);
         }
     } catch (error) {
         console.error('Error fetching reviews:', error);
-        displayReviews([]);  // Show empty reviews
+        displayReviews([]);
     }
 }
 
@@ -335,24 +394,18 @@ function displayReviews(reviews) {
     const reviewList = document.getElementById('review-list');
     if (!reviewList) return;
     
-    // Clear the current content
     reviewList.innerHTML = '';
     
-    // If no reviews to display
     if (!reviews || reviews.length === 0) {
         reviewList.innerHTML = '<p>No reviews yet for this place.</p>';
         return;
     }
     
-    // Iterate over the reviews data
     reviews.forEach(review => {
         const reviewElement = document.createElement('div');
         reviewElement.className = 'review-card';
         
-        // Convert numeric rating to stars
         const ratingStars = '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
-        
-        // Get user name or fallback to anonymous if user details are missing
         let reviewerName = 'Anonymous User';
         if (review.user && review.user.first_name && review.user.last_name) {
             reviewerName = `${review.user.first_name} ${review.user.last_name}`;
@@ -366,4 +419,18 @@ function displayReviews(reviews) {
         
         reviewList.appendChild(reviewElement);
     });
+}
+
+function parseJwt(token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (e) {
+        console.error('Error parsing JWT token:', e);
+        return {};
+    }
 }

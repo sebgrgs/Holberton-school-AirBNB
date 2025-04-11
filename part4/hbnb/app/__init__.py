@@ -23,6 +23,7 @@ from app.api.v1.protected import api as protected_ns
 def create_app(config_class="config.DevelopmentConfig"):
     app = Flask(__name__)
     app.config.from_object(config_class)
+    app.url_map.strict_slashes = False
     CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]}})
     api = Api(app, version='1.0', title='HBnB API', description='HBnB Application API',
               security='Bearer', authorizations={

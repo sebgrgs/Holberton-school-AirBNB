@@ -16,9 +16,23 @@ body {
 }
 
 header {
-    background-color: #333;
+    background-color: #0a140a; /* Changed from #333 to green */
     color: #fff;
     padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+footer {
+    background-color: #0a140a;
+    color: #fff;
+    padding: 1rem;
+    text-align: center;
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    margin-top: 2rem;
 }
 
 nav a {
@@ -31,47 +45,163 @@ main {
     padding: 2rem;
 }
 
-.place-card {
-    margin: 20px;
-    padding: 15px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    background-color: #fff;
-    transition: transform 0.3s ease;
+h1 {
+    font-size: 2.2rem;
+    margin-bottom: 30px;
+    color: #0a140a;
+    letter-spacing: 1px;
 }
 
+h1, h2, h3 {
+    text-align: center;
+}
+
+#filter {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 30px 0;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+#price-filter {
+    padding: 10px 15px;
+    border: 2px solid #0a140a;
+    border-radius: 8px;
+    background-color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #333;
+    min-width: 200px;
+    text-align: center;
+    appearance: none;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%230a140a" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/><path d="M0 0h24v24H0z" fill="none"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+}
+
+#price-filter:hover, #price-filter:focus {
+    border-color: #2c412c;
+    box-shadow: 0 0 5px rgba(10, 20, 10, 0.3);
+    outline: none;
+}
+
+#filter label {
+    font-size: 1.1rem;
+    color: #333;
+    margin-right: 15px;
+    font-weight: bold;
+}
+
+#places-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 30px; /* Increased gap between cards */
+    margin: 30px 0; /* More vertical margin */
+}
+
+.place-card {
+    flex: 0 0 calc(33.33% - 30px); /* Slightly wider with bigger gap */
+    margin: 0;
+    text-align: center;
+    padding: 25px; /* Increased padding from 15px */
+    border: 1px solid #ddd;
+    border-radius: 12px; /* Increased border radius */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15); /* Enhanced shadow */
+    background-color: #fff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box;
+    min-height: 220px; /* Set minimum height */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+@media (max-width: 900px) {
+    .place-card {
+        flex: 0 0 calc(50% - 20px);
+    }
+}
+
+@media (max-width: 600px) {
+    .place-card {
+        flex: 0 0 100%;
+    }
+}
 .place-card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-8px); /* More pronounced hover effect */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.2);
 }
 
 .place-card h3 {
     margin-top: 0;
     color: #333;
+    font-size: 1.4rem; /* Larger font size for title */
+    margin-bottom: 15px;
+}
+
+.place-card p {
+    font-size: 1.2rem; /* Larger price text */
+    color: #0a140a;
+    font-weight: bold;
+    margin: 15px 0;
 }
 
 .place-details {
-    margin: 20px;
-    padding: 20px;
+    margin: 30px auto;
+    max-width: 800px;
+    padding: 30px;
     background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.08);
 }
 
 .place-info {
-    padding: 15px;
+    padding: 0;
 }
 
 .place-info h1 {
-    font-size: 28px;
-    margin: 0 0 20px 0;
-    color: #333;
-    font-weight: bold;
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+    color: #0a140a;
+    font-weight: 700;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 15px;
 }
 
 .place-info h3 {
     margin-top: 20px;
     margin-bottom: 10px;
+}
+
+.host-info, .price-info, .description, .amenities {
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.host-info h3, .price-info h3, .description h3, .amenities h3 {
+    font-size: 1.4rem;
+    color: #333;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.host-info p, .price-info p, .description p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #555;
+}
+
+.price-info p {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #0a140a;
 }
 
 #amenities-list {
@@ -99,7 +229,7 @@ main {
 .button {
     display: inline-block;
     padding: 10px 20px;
-    background-color: #4CAF50;
+    background-color: #0a140a;
     color: white;
     text-decoration: none;
     border-radius: 4px;
@@ -108,85 +238,143 @@ main {
 }
 
 .button:hover {
-    background-color: #45a049;
+    background-color: #0a140a;
 }
 
 .details-button {
-    display: inline-block;
-    padding: 8px 16px;
-    background-color: #4CAF50;
+    display: block;
+    margin: 15px auto;
+    width: 80%;
+    padding: 10px 20px; /* Larger button */
+    background-color: #0a140a;
     color: white;
     text-decoration: none;
-    border-radius: 4px;
-    margin-top: 10px;
+    border-radius: 6px;
+    margin-top: 15px;
+    font-size: 1rem;
+    text-align: center;
+    transition: background-color 0.2s ease;
 }
 
 .details-button:hover {
-    background-color: #45a049;
+    background-color: #1c291c;
 }
 
 .review-card {
-    margin: 20px;
-    padding: 15px;
+    margin: 0 0 20px 0;
+    padding: 20px 0;
     border: 1px solid #ddd;
-    border-radius: 10px;
-    background-color: #f9f9f9;
+    border-radius: 12px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    background-color: #fff;
+    transition: box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.review-card:last-child {
+    border-bottom: none;
 }
 
 .review-card .rating {
-    font-weight: bold;
     color: #f8c102;
+    font-size: 1.2rem;
     margin-bottom: 10px;
 }
 
 .review-card .reviewer {
-    font-style: italic;
-    color: #666;
-    text-align: right;
+    font-size: 0.9rem;
+    color: #888;
     margin-top: 10px;
+    text-align: right;
+    font-style: italic;
+}
+
+.review-card p {
+    font-size: 1rem;
+    line-height: 1.6;
+    margin: 10px 0;
+    color: #555;
 }
 
 .add-review {
-    margin: 20px;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    background-color: #f5f5f5;
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 25px;
+    border: none;
+    border-top: 2px solid #f0f0f0;
+    background-color: transparent;
+    border-radius: 0;
+}
+
+.add-review h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #0a140a;
+    text-align: left;
+}
+
+.reviews-section {
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 0;
+}
+
+.reviews-section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #0a140a;
+    text-align: left;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+#review-list {
+    padding: 0;
+}
+
+
+.form {
+    text-align: center;
 }
 
 .form label {
     display: block;
+    text-align: center;
     margin-top: 10px;
     margin-bottom: 5px;
 }
 
 .form textarea {
-    width: 100%;
-    min-height: 100px;
-    padding: 8px;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 60px;
+    border-radius: 40px;
+    font-size: 1rem;
 }
 
 .form select {
-    width: 100%;
-    padding: 8px;
     border: 1px solid #ddd;
-    border-radius: 4px;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 1rem;
 }
 
 .form button {
-    margin-top: 15px;
-    padding: 10px 20px;
-    background-color: #4CAF50;
+    background-color: #0a140a;
     color: white;
     border: none;
-    border-radius: 4px;
+    padding: 12px 25px;
+    border-radius: 6px;
+    font-size: 1rem;
     cursor: pointer;
+    transition: background-color 0.3s;
 }
 
 .form button:hover {
-    background-color: #45a049;
+    background-color: #1c291c;
 }
 
 #login-form {
@@ -215,7 +403,7 @@ main {
     width: 100%;
     padding: 10px;
     margin-top: 20px;
-    background-color: #4CAF50;
+    background-color: #0a140a;
     color: white;
     border: none;
     border-radius: 4px;
@@ -223,7 +411,7 @@ main {
 }
 
 #login-form button:hover {
-    background-color: #45a049;
+    background-color: #0a140a;
 }
 
 .error-message {
