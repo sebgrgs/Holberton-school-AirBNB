@@ -3,6 +3,11 @@
 ## Overview
 This project is a frontend implementation of the Holberton School AirBNB clone (HBNB) - a web application that simulates core functionalities of AirBNB. The frontend provides an intuitive interface for users to browse rental properties, view detailed information, filter listings by price, and submit reviews for places they've visited.
 
+## Overview of the website
+![site](images/show1.png)
+![site](images/show.png)
+![site](images/show2.png)
+
 ## Features
 
 ### User Authentication
@@ -100,7 +105,7 @@ http://localhost:8000
 
 ### Testing Review Functionality
 **Prerequisites:**
-- You must be logged in
+- You must be logged in to submit a review
 - The backend API server must be running
 
 1. Navigate to a specific place:
@@ -140,6 +145,7 @@ http://localhost:8000
 - `displayPlaceDetails()`: Renders a property's details in the UI
 - `fetchPlaceReviews()`: Retrieves reviews for a property
 - `displayReviews()`: Renders reviews with star ratings and user names
+- `parseJWT()`: Decodes the JWT token to extract user information
 
 ## Responsive Design
 The application is fully responsive with breakpoints for different screen sizes:
